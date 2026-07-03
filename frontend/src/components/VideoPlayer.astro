@@ -26,6 +26,7 @@ const placeholderSeed = videoId.slice(0, 8);
             preload="metadata"
             playsinline
             controls
+            controlsList="nodownload"
             src={`/media/${videoId}`}
           />
           <div
@@ -51,8 +52,9 @@ const placeholderSeed = videoId.slice(0, 8);
 <script>
   const video = document.getElementById('wedding-video');
   const overlay = document.getElementById('video-play-overlay');
+  const wrapper = document.getElementById('video-wrapper');
 
-  if (video && overlay) {
+  if (video && overlay && wrapper) {
     function showOverlay() {
       overlay.classList.remove('hidden');
       overlay.style.display = 'flex';
@@ -72,5 +74,14 @@ const placeholderSeed = videoId.slice(0, 8);
       if (video.currentTime === 0 || video.ended) showOverlay();
     });
     video.addEventListener('ended', showOverlay);
+
+    video.addEventListener('error', () => {
+      hideOverlay();
+      video.style.display = 'none';
+      const msg = document.createElement('div');
+      msg.className = 'absolute inset-0 flex flex-col items-center justify-center bg-cream-dark z-20';
+      msg.innerHTML = '<p class="font-body text-dark-muted text-sm">Video unavailable</p>';
+      wrapper.appendChild(msg);
+    });
   }
 </script>

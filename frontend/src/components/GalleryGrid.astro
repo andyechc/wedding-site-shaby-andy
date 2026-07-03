@@ -2,7 +2,7 @@
 const { photos, tabId } = Astro.props;
 ---
 
-<div id={`grid-${tabId}`} class="gallery-grid" data-animate="fade-up">
+<div id={`grid-${tabId}`} class="gallery-grid" data-animate="fade-up" data-tab-id={tabId}>
   <div class="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
     {photos.map((photo, i) => (
       <div
@@ -26,14 +26,18 @@ const { photos, tabId } = Astro.props;
 </div>
 
 <script>
-  document.querySelectorAll(`#grid-${tabId} img`).forEach((img) => {
-    img.addEventListener('click', () => {
-      const items = [...document.querySelectorAll(`#grid-${tabId} img`)].map((el) => ({
-        id: el.src.split('/media/')[1] || el.src.split('/').pop(),
-        title: el.alt,
-      }));
-      const index = Number(img.dataset.index);
-      window.openLightbox(index, items);
+  document.querySelectorAll('[data-tab-id]').forEach((grid) => {
+    const tabId = grid.dataset.tabId;
+    const imgs = grid.querySelectorAll('img');
+    imgs.forEach((img) => {
+      img.addEventListener('click', () => {
+        const items = [...imgs].map((el) => ({
+          id: el.src.split('/media/')[1] || el.src.split('/').pop(),
+          title: el.alt,
+        }));
+        const index = Number(img.dataset.index);
+        window.openLightbox(index, items);
+      });
     });
   });
 </script>

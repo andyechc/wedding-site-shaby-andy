@@ -56,12 +56,9 @@ export const GET: APIRoute = async ({ params, request }) => {
       },
     });
   } catch (err: any) {
-    if (process.env.NODE_ENV === 'development') {
-      return new Response(PLACEHOLDER('dev'), {
-        headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public, max-age=86400', ...corsHeaders },
-      });
-    }
-    return new Response('Proxy error', { status: 502, headers: corsHeaders });
+    return new Response(PLACEHOLDER('error'), {
+      headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public, max-age=60', ...corsHeaders },
+    });
   }
 };
 
