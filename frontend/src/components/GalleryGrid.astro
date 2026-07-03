@@ -32,8 +32,8 @@ const { photos, tabId } = Astro.props;
     imgs.forEach((img) => {
       img.addEventListener('click', () => {
         const items = [...imgs].map((el) => {
-          const src = el.src;
-          const id = src.includes('/media/') ? src.split('/media/')[1] : src.split('/').pop();
+          const path = new URL(el.src).pathname;
+          const id = path.startsWith('/website-images/') ? path.slice(1) : path.replace('/media/', '');
           return { id, title: el.alt };
         });
         const index = Number(img.dataset.index);
