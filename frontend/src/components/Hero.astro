@@ -14,7 +14,7 @@ const photosJson = JSON.stringify(photoIds);
     <p class="font-sans text-xs md:text-sm tracking-[0.3em] uppercase text-white/90 mb-4 md:mb-6" data-animate="fade-in">
       April 25, 2026
     </p>
-    <h1 class="font-script text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[8rem] gold-text text-center leading-[1.15] py-2" data-animate="fade-up">
+    <h1 class="font-script text-5xl sm:text-6xl md:text-7xl lg:text-8xl gold-text text-center leading-tight py-4 px-2" data-animate="fade-up">
       Shabelly & Jose A.
     </h1>
     <div class="gold-divider w-20 md:w-24 mt-6 md:mt-8 mb-4 md:mb-6 opacity-80" data-animate="fade-in" />
@@ -38,17 +38,19 @@ const photosJson = JSON.stringify(photoIds);
 
   if (section && a && b) {
   const ids = JSON.parse(section.dataset.photos);
-    a.style.transition = 'opacity 1s ease-in-out';
-    b.style.transition = 'opacity 1s ease-in-out';
+    [a, b].forEach(el => el.style.transition = 'opacity 1s ease-in-out');
+
+    function preload(url, onDone) {
+      const img = new Image();
+      img.onload = onDone;
+      img.onerror = onDone;
+      img.src = url;
+    }
 
     if (ids.length > 0) {
-      const img = new Image();
-      img.src = a.style.backgroundImage.match(/url\(['"]?(.*?)['"]?\)/i)?.[1] || '';
-      if (img.src) {
-        img.onload = () => { a.style.opacity = '1'; };
-      } else {
-        a.style.opacity = '1';
-      }
+      const firstUrl = a.style.backgroundImage.match(/url\(['"]?(.*?)['"]?\)/i)?.[1];
+      if (firstUrl) preload(firstUrl, () => { a.style.opacity = '1'; });
+      else a.style.opacity = '1';
     }
 
     if (ids.length > 1) {
@@ -64,14 +66,12 @@ const photosJson = JSON.stringify(photoIds);
         currentId = nextId;
 
         const url = `/media/${nextId}`;
-        const preloader = new Image();
-        preloader.src = url;
-        preloader.onload = () => {
+        preload(url, () => {
           inactive.style.backgroundImage = `url(${url})`;
           inactive.style.opacity = '1';
           active.style.opacity = '0';
           [active, inactive] = [inactive, active];
-        };
+        });
       }, 5000);
     }
   }
