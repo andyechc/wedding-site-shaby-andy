@@ -51,11 +51,15 @@ const firstImage = heroImages[0];
       el.style.zIndex = i === 0 ? '10' : '0';
     });
     setInterval(() => {
+      let next;
+      do {
+        next = Math.floor(Math.random() * total);
+      } while (next === current && total > 1);
       bgElements.forEach((el) => {
         el.style.opacity = '0';
         el.style.zIndex = '0';
       });
-      current = (current + 1) % total;
+      current = next;
       bgElements[current].style.opacity = '1';
       bgElements[current].style.zIndex = '10';
     }, 5000);
