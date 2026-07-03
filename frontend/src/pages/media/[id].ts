@@ -38,10 +38,10 @@ export const GET: APIRoute = async ({ params, request }) => {
     const client = await auth.getClient();
 
     if (isStream) {
-      const authHeaders = await client.getRequestHeaders();
+      const headers = await client.getRequestHeaders();
       const driveRes = await fetch(
         `https://www.googleapis.com/drive/v3/files/${id}?alt=media`,
-        { headers: authHeaders, redirect: 'manual' }
+        { headers, redirect: 'manual' }
       );
 
       if (driveRes.status >= 300 && driveRes.status < 400) {
@@ -55,9 +55,8 @@ export const GET: APIRoute = async ({ params, request }) => {
       }
     }
 
-    const authHeaders = await client.getRequestHeaders();
-
-    const fetchHeaders: Record<string, string> = { ...authHeaders };
+    const headers = await client.getRequestHeaders();
+    const fetchHeaders: Record<string, string> = { ...headers };
 
     const range = request.headers.get('range');
     if (range) fetchHeaders['Range'] = range;

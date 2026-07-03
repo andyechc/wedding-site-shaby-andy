@@ -5,7 +5,7 @@ const photosJson = JSON.stringify(photoIds);
 ---
 
 <section class="relative h-screen w-full overflow-hidden hero-section" data-protected data-photos={photosJson}>
-  <div id="hero-a" class="hero-layer absolute inset-0 bg-cover bg-center" style="background-image: url(/media/${firstImage}); opacity: 0; z-index: 10;" />
+  <div id="hero-a" class="hero-layer absolute inset-0 bg-cover bg-center" style={`background-image: url(/media/${firstImage}); opacity: 0; z-index: 10;`} />
   <div id="hero-b" class="hero-layer absolute inset-0 bg-cover bg-center" style="opacity: 0; z-index: 9;" />
 
   <div class="absolute inset-0" style="background: linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.20) 30%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0.55) 100%); z-index: 20;" />
