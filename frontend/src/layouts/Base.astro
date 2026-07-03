@@ -1,8 +1,13 @@
 ---
 import '../styles/base.css';
+import media from '../data/media.json';
+const site = 'https://wedding-site-shaby-andy.vercel.app';
 const path = Astro.url.pathname;
 const isHome = path === '/' || path === '';
 const isGallery = path.startsWith('/gallery');
+const ogImage = media.edited.length > 0 ? `${site}/media/${media.edited[0]}` : `${site}/favicon.svg`;
+const pageTitle = isHome ? 'Shaby & Andy' : isGallery ? 'Gallery — Shaby & Andy' : 'Shaby & Andy';
+const description = 'April 25, 2026 — Thank you for celebrating with us';
 ---
 
 <!DOCTYPE html>
@@ -10,10 +15,23 @@ const isGallery = path.startsWith('/gallery');
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Shaby & Andy — April 25, 2026" />
+    <meta name="description" content={description} />
     <meta name="theme-color" content="#FAF8F5" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Shaby & Andy</title>
+    <title>{pageTitle}</title>
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={site + path} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="800" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
   </head>
   <body>
     <nav id="main-nav" class="nav-base fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between transition-all duration-500">

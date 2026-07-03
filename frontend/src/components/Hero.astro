@@ -33,12 +33,11 @@ const photosJson = JSON.stringify(photoIds);
 
 <script>
   const section = document.querySelector('.hero-section');
-  if (!section) return;
-  const ids = JSON.parse(section.dataset.photos);
   const a = document.getElementById('hero-a');
   const b = document.getElementById('hero-b');
 
-  if (a && b) {
+  if (section && a && b) {
+  const ids = JSON.parse(section.dataset.photos);
     a.style.transition = 'opacity 1s ease-in-out';
     b.style.transition = 'opacity 1s ease-in-out';
 
