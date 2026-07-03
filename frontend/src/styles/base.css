@@ -126,6 +126,15 @@
   .hero-bg {
     transition: opacity 1s ease-in-out;
   }
+
+  .highlight-marker {
+    display: inline;
+    background: rgba(201, 168, 76, 0.18);
+    padding: 0.15em 0.35em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    border-radius: 2px;
+  }
 }
 
 @layer utilities {
