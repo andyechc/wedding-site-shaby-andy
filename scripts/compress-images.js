@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
+const os = require('os');
 
 const frontendModules = path.join(__dirname, '..', 'frontend', 'node_modules');
 const modulePath = require.resolve('google-auth-library', { paths: [frontendModules] });
@@ -9,11 +10,16 @@ const { GoogleAuth } = require(modulePath);
 const MEDIA_PATH = path.join(__dirname, '..', 'frontend', 'src', 'data', 'media.json');
 const WEBP_QUALITY = 55;
 
+function resolveInput() {
+  const idx = process.argv.indexOf('--input');
+  if (idx !== -1) return process.argv[idx + 1];
+  return path.join(os.homedir(), 'Documents', '439-Boda 250426');
+}
+
 function loadSA() {
   const keyArgIndex = process.argv.indexOf('--key');
   if (keyArgIndex !== -1) {
-    const keyPath = process.argv[keyArgIndex + 1];
-    return JSON.parse(fs.readFileSync(keyPath, 'utf8'));
+    return JSON.parse(fs.readFileSync(process.argv[keyArgIndex + 1], 'utf8'));
   }
   if (process.env.GOOGLE_SERVICE_ACCOUNT) {
     return JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
@@ -29,16 +35,7 @@ async function getToken(sa) {
   });
   const client = await auth.getClient();
   const { token } = await client.getAccessToken();
-  return { token, auth, client };
-}
-
-async function downloadImage(id, token) {
-  const res = await fetch(
-    `https://www.googleapis.com/drive/v3/files/${id}?alt=media`,
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  if (!res.ok) throw new Error(`Download ${id}: ${res.status}`);
-  return Buffer.from(await res.arrayBuffer());
+  return token;
 }
 
 async function uploadWebp(buffer, name, token) {
@@ -69,21 +66,35 @@ async function uploadWebp(buffer, name, token) {
   return data.id;
 }
 
+function readPhotos(folder, label) {
+  const dir = path.join(folder, label);
+  if (!fs.existsSync(dir)) {
+    console.error(`Folder not found: ${dir}`);
+    process.exit(1);
+  }
+  return fs.readdirSync(dir)
+    .filter(f => /\.(jpg|jpeg|png|tiff?)$/i.test(f))
+    .sort((a, b) => a.localeCompare(b));
+}
+
 async function main() {
+  const inputDir = resolveInput();
   const sa = loadSA();
-  const { token } = await getToken(sa);
+  const token = await getToken(sa);
 
-  const media = JSON.parse(fs.readFileSync(MEDIA_PATH, 'utf8'));
-  const total = media.edited.length + media.nonEdited.length;
-  console.log(`Compressing ${total} images to WebP (quality ${WEBP_QUALITY})...\n`);
+  console.log(`Input: ${inputDir}`);
+  console.log(`Compressing to WebP (quality ${WEBP_QUALITY})...\n`);
 
-  const compressBatch = async (ids, label) => {
+  const compressBatch = async (label) => {
+    const files = readPhotos(inputDir, label);
     const newIds = [];
-    for (let i = 0; i < ids.length; i++) {
-      const id = ids[i];
-      process.stdout.write(`  [${label}] ${i + 1}/${ids.length} (${id.slice(0, 12)}...) `);
+
+    for (let i = 0; i < files.length; i++) {
+      const filePath = path.join(inputDir, label, files[i]);
+      process.stdout.write(`  [${label}] ${i + 1}/${files.length} (${files[i].slice(0, 30)}) `);
+
       try {
-        const buf = await downloadImage(id, token);
+        const buf = fs.readFileSync(filePath);
         const webp = await sharp(buf).webp({ quality: WEBP_QUALITY }).toBuffer();
         const newId = await uploadWebp(webp, `wedding_${label}_${i}.webp`, token);
         newIds.push(newId);
@@ -91,18 +102,18 @@ async function main() {
         process.stdout.write(`✓ ${saved}% smaller\n`);
       } catch (err) {
         process.stdout.write(`✗ ${err.message}\n`);
-        newIds.push(id);
       }
     }
+
     return newIds;
   };
 
   console.log('Edited photos:');
-  media.edited = await compressBatch(media.edited, 'edited');
-
+  const edited = await compressBatch('Edited');
   console.log('\nNon-edited photos:');
-  media.nonEdited = await compressBatch(media.nonEdited, 'nonEdited');
+  const nonEdited = await compressBatch('Non-edited');
 
+  const media = { edited, nonEdited, video: { id: '10T4AAJBmqfkTWwdexBiCdcId7fVicxJ9', title: 'Our Wedding Highlight' } };
   fs.writeFileSync(MEDIA_PATH, JSON.stringify(media, null, 2));
   console.log(`\nDone! Updated ${MEDIA_PATH}`);
 }
