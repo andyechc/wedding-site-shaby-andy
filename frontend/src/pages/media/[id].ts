@@ -38,20 +38,13 @@ export const GET: APIRoute = async ({ params, request }) => {
     const client = await auth.getClient();
 
     if (isStream) {
-      const headers = await client.getRequestHeaders();
-      const driveRes = await fetch(
-        `https://www.googleapis.com/drive/v3/files/${id}?alt=media`,
-        { headers, redirect: 'manual' }
-      );
-
-      if (driveRes.status >= 300 && driveRes.status < 400) {
-        const location = driveRes.headers.get('location');
-        if (location) {
-          return new Response(null, {
-            status: 302,
-            headers: { 'Location': location, ...corsHeaders },
-          });
-        }
+      const token = await auth.getAccessToken();
+      if (token) {
+        const driveUrl = `https://www.googleapis.com/drive/v3/files/${id}?alt=media&access_token=${encodeURIComponent(token)}`;
+        return new Response(null, {
+          status: 302,
+          headers: { 'Location': driveUrl, ...corsHeaders },
+        });
       }
     }
 
