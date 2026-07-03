@@ -10,5 +10,5 @@ export default defineConfig({
   ],
   output: 'server',
   adapter: vercel(),
-  site: 'https://wedding-site-shaby-andy.vercel.app',
+  site: 'https://shaby-and-andy-wedding.vercel.app',
 });
