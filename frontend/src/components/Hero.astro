@@ -1,21 +1,11 @@
 ---
 const { photoIds } = Astro.props;
-const heroImages = photoIds.slice(0, 6);
-const firstImage = heroImages[0];
+const firstImage = photoIds[0];
 ---
 
 <section class="relative h-screen w-full overflow-hidden" data-protected>
-  {heroImages.map((id, i) => (
-    <div
-      class="hero-bg absolute inset-0 bg-cover bg-center"
-      class:list={{
-        'opacity-100 z-10': i === 0,
-        'opacity-0 z-0': i !== 0,
-      }}
-      style={`background-image: url(/media/${id});`}
-      data-index={i}
-    />
-  ))}
+  <div id="hero-a" class="hero-layer absolute inset-0 bg-cover bg-center opacity-100" style="background-image: url(/media/${firstImage}); z-index: 10;" />
+  <div id="hero-b" class="hero-layer absolute inset-0 bg-cover bg-center opacity-0" style="z-index: 9;" />
 
   <div class="absolute inset-0" style="background: linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.20) 30%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0.55) 100%); z-index: 20;" />
 
@@ -41,36 +31,38 @@ const firstImage = heroImages[0];
 </section>
 
 <script>
-  const bgElements = document.querySelectorAll('.hero-bg');
-  if (bgElements.length > 1) {
-    let current = 0;
-    const total = bgElements.length;
-    bgElements.forEach((el, i) => {
-      el.style.transition = 'opacity 1s ease-in-out';
-      el.style.opacity = i === 0 ? '1' : '0';
-      el.style.zIndex = i === 0 ? '10' : '0';
-    });
-    setInterval(() => {
-      let next;
-      do {
-        next = Math.floor(Math.random() * total);
-      } while (next === current && total > 1);
-      bgElements.forEach((el) => {
-        el.style.opacity = '0';
-        el.style.zIndex = '0';
-      });
-      current = next;
-      bgElements[current].style.opacity = '1';
-      bgElements[current].style.zIndex = '10';
-    }, 5000);
+  const ids = JSON.parse('{JSON.stringify(photoIds)}');
+  const a = document.getElementById('hero-a');
+  const b = document.getElementById('hero-b');
+  [a, b].forEach(el => el.style.transition = 'opacity 1s ease-in-out');
+
+  if (ids.length > 0) {
+    const img = new Image();
+    img.src = a.style.backgroundImage.replace(/url\(['"]?(.*?)['"]?\)/i, '$1');
+    img.onload = () => { a.style.opacity = '1'; };
   }
 
-  const firstBg = bgElements[0];
-  if (firstBg) {
-    const img = new Image();
-    img.src = firstBg.style.backgroundImage.replace(/url\(['"]?(.*?)['"]?\)/i, '$1');
-    img.onload = () => {
-      firstBg.style.opacity = '1';
-    };
+  if (ids.length > 1) {
+    let active = a;
+    let inactive = b;
+    let currentId = ids[0];
+
+    setInterval(() => {
+      let nextId;
+      do {
+        nextId = ids[Math.floor(Math.random() * ids.length)];
+      } while (nextId === currentId && ids.length > 1);
+      currentId = nextId;
+
+      const url = `/media/${nextId}`;
+      const preloader = new Image();
+      preloader.src = url;
+      preloader.onload = () => {
+        inactive.style.backgroundImage = `url(${url})`;
+        inactive.style.opacity = '1';
+        active.style.opacity = '0';
+        [active, inactive] = [inactive, active];
+      };
+    }, 5000);
   }
 </script>
