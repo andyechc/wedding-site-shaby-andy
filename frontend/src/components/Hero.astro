@@ -1,0 +1,72 @@
+---
+const { photoIds } = Astro.props;
+const heroImages = photoIds.slice(0, 6);
+const firstImage = heroImages[0];
+---
+
+<section class="relative h-screen w-full overflow-hidden" data-protected>
+  {heroImages.map((id, i) => (
+    <div
+      class="hero-bg absolute inset-0 bg-cover bg-center"
+      class:list={{
+        'opacity-100 z-10': i === 0,
+        'opacity-0 z-0': i !== 0,
+      }}
+      style={`background-image: url(/media/${id});`}
+      data-index={i}
+    />
+  ))}
+
+  <div class="absolute inset-0" style="background: linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 40%, rgba(250,248,245,0) 60%, rgba(250,248,245,0.95) 100%); z-index: 20;" />
+
+  <div class="absolute inset-0 z-30 flex flex-col items-center justify-center px-6 pb-12 md:pb-16">
+    <p class="font-sans text-xs md:text-sm tracking-[0.3em] uppercase text-white/90 mb-4 md:mb-6" data-animate="fade-in">
+      April 25, 2026
+    </p>
+    <h1 class="font-script text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[8rem] gold-text text-center leading-[1.15] py-2" data-animate="fade-up">
+      Shaby & Andy
+    </h1>
+    <div class="gold-divider w-20 md:w-24 mt-6 md:mt-8 mb-4 md:mb-6 opacity-80" data-animate="fade-in" />
+    <p class="font-body text-lg md:text-xl text-white/80 text-center font-light tracking-wide" data-animate="fade-up" style="animation-delay: 200ms;">
+      Thank you for celebrating with us
+    </p>
+  </div>
+
+  <div class="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 text-white/40 animate-bounce-subtle">
+    <span class="font-sans text-[10px] tracking-[0.2em] uppercase">Scroll</span>
+    <svg width="16" height="24" viewBox="0 0 16 24" fill="none" class="text-white/30">
+      <path d="M8 0v20M8 20l-6-6M8 20l6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+</section>
+
+<script>
+  const bgElements = document.querySelectorAll('.hero-bg');
+  if (bgElements.length > 1) {
+    let current = 0;
+    const total = bgElements.length;
+    bgElements.forEach((el, i) => {
+      el.style.transition = 'opacity 1s ease-in-out';
+      el.style.opacity = i === 0 ? '1' : '0';
+      el.style.zIndex = i === 0 ? '10' : '0';
+    });
+    setInterval(() => {
+      bgElements.forEach((el) => {
+        el.style.opacity = '0';
+        el.style.zIndex = '0';
+      });
+      current = (current + 1) % total;
+      bgElements[current].style.opacity = '1';
+      bgElements[current].style.zIndex = '10';
+    }, 5000);
+  }
+
+  const firstBg = bgElements[0];
+  if (firstBg) {
+    const img = new Image();
+    img.src = firstBg.style.backgroundImage.replace(/url\(['"]?(.*?)['"]?\)/i, '$1');
+    img.onload = () => {
+      firstBg.style.opacity = '1';
+    };
+  }
+</script>

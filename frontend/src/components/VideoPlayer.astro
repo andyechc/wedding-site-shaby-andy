@@ -1,0 +1,76 @@
+---
+const { videoId, title } = Astro.props;
+const isDev = !process.env.GOOGLE_SERVICE_ACCOUNT || process.env.GOOGLE_SERVICE_ACCOUNT === 'dev';
+const placeholderSeed = videoId.slice(0, 8);
+---
+
+<section class="py-24 px-6 bg-cream-dark" data-animate="fade-up">
+  <div class="max-w-4xl mx-auto text-center">
+    <h2 class="font-serif text-2xl md:text-3xl text-dark-text font-light tracking-wide mb-3">
+      Our Highlight
+    </h2>
+    <div class="gold-divider w-16 mx-auto mb-12" />
+
+    <div class="relative rounded-sm overflow-hidden bg-black aspect-video flex items-center justify-center" data-protected id="video-wrapper">
+      {isDev ? (
+        <svg width="1200" height="800" viewBox="0 0 1200 800" class="w-full h-full object-contain">
+          <rect width="1200" height="800" fill="#f5f0eb"/>
+          <rect x="560" y="360" width="80" height="80" rx="8" fill="#c9a84c" opacity="0.3"/>
+          <text x="600" y="420" font-family="serif" font-size="12" fill="#c9a84c" text-anchor="middle" opacity="0.5">{placeholderSeed}</text>
+        </svg>
+      ) : (
+        <>
+          <video
+            id="wedding-video"
+            class="w-full h-full object-contain cursor-pointer"
+            preload="metadata"
+            playsinline
+            controls
+            src={`/media/${videoId}`}
+          />
+          <div
+            id="video-play-overlay"
+            class="absolute inset-0 flex items-center justify-center cursor-pointer z-10 bg-black/20 transition-opacity duration-300 hover:bg-black/30"
+          >
+            <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center transition-transform duration-300 hover:scale-105 shadow-lg">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="text-gold ml-1">
+                <path d="M8 5v14l11-7L8 5z" fill="currentColor"/>
+              </svg>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+
+    {title && (
+      <p class="font-body text-dark-muted text-lg mt-4 font-light italic">"{title}"</p>
+    )}
+  </div>
+</section>
+
+<script>
+  const video = document.getElementById('wedding-video');
+  const overlay = document.getElementById('video-play-overlay');
+
+  if (video && overlay) {
+    function showOverlay() {
+      overlay.classList.remove('hidden');
+      overlay.style.display = 'flex';
+    }
+
+    function hideOverlay() {
+      overlay.classList.add('hidden');
+      overlay.style.display = 'none';
+    }
+
+    overlay.addEventListener('click', () => {
+      video.play().catch(() => {});
+    });
+
+    video.addEventListener('play', hideOverlay);
+    video.addEventListener('pause', () => {
+      if (video.currentTime === 0 || video.ended) showOverlay();
+    });
+    video.addEventListener('ended', showOverlay);
+  }
+</script>

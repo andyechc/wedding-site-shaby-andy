@@ -1,0 +1,81 @@
+---
+const { id, title } = Astro.props;
+---
+
+<div
+  id="lightbox"
+  class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm hidden items-center justify-center"
+  data-protected
+>
+  <button id="lightbox-close" class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center text-white/60 hover:text-white transition-colors z-10" aria-label="Close">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 6l12 12M18 6l-12 12"/></svg>
+  </button>
+
+  <button id="lightbox-prev" class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all" aria-label="Previous">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+
+  <div id="lightbox-content" class="max-w-[90vw] max-h-[85vh] flex items-center justify-center">
+    <img id="lightbox-img" class="max-w-full max-h-[85vh] object-contain rounded-sm" src="" alt="" draggable="false" />
+  </div>
+
+  <button id="lightbox-next" class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all" aria-label="Next">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+  </button>
+
+  <div id="lightbox-counter" class="absolute bottom-6 left-1/2 -translate-x-1/2 font-sans text-xs tracking-[0.2em] uppercase text-white/40">
+    1 / 1
+  </div>
+</div>
+
+<script>
+  const lightbox = document.getElementById('lightbox');
+  const img = document.getElementById('lightbox-img');
+  const counter = document.getElementById('lightbox-counter');
+  let items = [];
+  let currentIndex = 0;
+
+  window.openLightbox = (index, photoItems) => {
+    items = photoItems;
+    currentIndex = index;
+    showImage();
+    lightbox.classList.remove('hidden');
+    lightbox.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closeLightbox = () => {
+    lightbox.classList.add('hidden');
+    lightbox.classList.remove('flex');
+    document.body.style.overflow = '';
+  };
+
+  function showImage() {
+    if (!items.length) return;
+    const item = items[currentIndex];
+    img.src = `/media/${item.id}`;
+    img.alt = item.title || 'Wedding photo';
+    counter.textContent = `${currentIndex + 1} / ${items.length}`;
+  }
+
+  function navigate(delta) {
+    currentIndex = ((currentIndex + delta) % items.length + items.length) % items.length;
+    showImage();
+  }
+
+  document.getElementById('lightbox-close').addEventListener('click', window.closeLightbox);
+  document.getElementById('lightbox-prev').addEventListener('click', () => navigate(-1));
+  document.getElementById('lightbox-next').addEventListener('click', () => navigate(1));
+
+  document.addEventListener('keydown', (e) => {
+    if (!lightbox.classList.contains('hidden')) {
+      if (e.key === 'Escape') window.closeLightbox();
+      if (e.key === 'ArrowLeft') navigate(-1);
+      if (e.key === 'ArrowRight') navigate(1);
+    }
+  });
+
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) window.closeLightbox();
+  });
+</script>

@@ -1,0 +1,22 @@
+---
+import Base from '../layouts/Base.astro';
+import GalleryTabs from '../components/GalleryTabs.astro';
+import Lightbox from '../components/Lightbox.astro';
+import Footer from '../components/Footer.astro';
+import media from '../data/media.json';
+const { edited, nonEdited } = media;
+const editedPhotos = edited.map(id => ({ id, title: '' }));
+const nonEditedPhotos = nonEdited.map(id => ({ id, title: '' }));
+---
+
+<Base>
+  <div class="pt-24" />
+  <GalleryTabs
+    edited={editedPhotos}
+    nonEdited={nonEditedPhotos}
+    editedCount={edited.length}
+    nonEditedCount={nonEdited.length}
+  />
+  <Lightbox />
+  <Footer slot="footer" />
+</Base>

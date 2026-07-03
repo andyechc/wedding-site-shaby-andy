@@ -1,0 +1,39 @@
+---
+const { photos, tabId } = Astro.props;
+---
+
+<div id={`grid-${tabId}`} class="gallery-grid" data-animate="fade-up">
+  <div class="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
+    {photos.map((photo, i) => (
+      <div
+        class="photo-frame break-inside-avoid cursor-pointer"
+        data-animate="fade-up"
+        style={`animation-delay: ${(i % 12) * 80}ms`}
+        data-protected
+      >
+        <img
+          src={`/media/${photo.id}`}
+          alt={photo.title || 'Wedding photo'}
+          class="w-full h-auto object-cover"
+          draggable="false"
+          loading="lazy"
+          data-gallery-id={tabId}
+          data-index={i}
+        />
+      </div>
+    ))}
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll(`#grid-${tabId} img`).forEach((img) => {
+    img.addEventListener('click', () => {
+      const items = [...document.querySelectorAll(`#grid-${tabId} img`)].map((el) => ({
+        id: el.src.split('/media/')[1] || el.src.split('/').pop(),
+        title: el.alt,
+      }));
+      const index = Number(img.dataset.index);
+      window.openLightbox(index, items);
+    });
+  });
+</script>

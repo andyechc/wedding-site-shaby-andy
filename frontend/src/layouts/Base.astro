@@ -1,0 +1,84 @@
+---
+import '../styles/base.css';
+const path = Astro.url.pathname;
+const isHome = path === '/' || path === '';
+const isGallery = path.startsWith('/gallery');
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Shaby & Andy — April 25, 2026" />
+    <meta name="theme-color" content="#FAF8F5" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Shaby & Andy</title>
+  </head>
+  <body>
+    <nav id="main-nav" class="nav-base fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between transition-all duration-500">
+      <a href="/" class="font-script text-2xl gold-text leading-none">S & A</a>
+      <div class="flex items-center gap-8 text-sm font-sans tracking-widest uppercase">
+        <a href="/" class="nav-link" class:list={{ 'nav-link-active': isHome }}>Home</a>
+        <a href="/gallery" class="nav-link" class:list={{ 'nav-link-active': isGallery }}>Gallery</a>
+      </div>
+    </nav>
+
+    <main>
+      <slot />
+    </main>
+
+    <slot name="footer" />
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
+        );
+        document.querySelectorAll('[data-animate]').forEach((el) => observer.observe(el));
+
+        document.querySelectorAll('img:not([data-no-blur])').forEach((img) => {
+          if (img.complete) {
+            img.classList.add('loaded');
+          } else {
+            img.classList.add('blur-load');
+            img.addEventListener('load', () => {
+              img.classList.remove('blur-load');
+              img.classList.add('loaded');
+            });
+          }
+        });
+
+        const nav = document.getElementById('main-nav');
+        if (nav) {
+          const onScroll = () => {
+            if (window.scrollY > 60) {
+              nav.classList.add('nav-glass');
+              nav.classList.remove('nav-transparent');
+            } else {
+              nav.classList.remove('nav-glass');
+              nav.classList.add('nav-transparent');
+            }
+          };
+          onScroll();
+          window.addEventListener('scroll', onScroll, { passive: true });
+        }
+      });
+
+      document.addEventListener('contextmenu', (e) => {
+        if (e.target.closest('[data-protected]')) e.preventDefault();
+      });
+      document.addEventListener('dragstart', (e) => {
+        if (e.target.closest('[data-protected]')) e.preventDefault();
+      });
+    </script>
+  </body>
+</html>

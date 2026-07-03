@@ -1,0 +1,60 @@
+---
+import GalleryGrid from './GalleryGrid.astro';
+
+const { edited, nonEdited, editedCount, nonEditedCount } = Astro.props;
+---
+
+<section class="py-24 px-6 bg-cream" data-animate="fade-up">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-14">
+      <h1 class="font-serif text-3xl md:text-4xl text-dark-text font-light tracking-wide mb-3">
+        Our Gallery
+      </h1>
+      <div class="gold-divider w-16 mx-auto mb-6" />
+      <p class="font-body text-dark-muted text-base font-light">
+        Every moment captured
+      </p>
+    </div>
+
+    <div class="flex justify-center gap-8 mb-12" id="tab-bar">
+      <button class="tab-btn font-sans text-xs tracking-[0.25em] uppercase pb-2 border-b-2 transition-all duration-300 text-gold border-gold" data-tab="edited">
+        Edited
+        <span class="font-sans text-[10px] ml-1 opacity-60">({editedCount})</span>
+      </button>
+      <button class="tab-btn font-sans text-xs tracking-[0.25em] uppercase pb-2 border-b-2 transition-all duration-300 text-dark-muted border-transparent hover:text-dark-text" data-tab="nonEdited">
+        Non-edited
+        <span class="font-sans text-[10px] ml-1 opacity-60">({nonEditedCount})</span>
+      </button>
+    </div>
+
+    <div id="tab-content-edited" class="tab-content block">
+      <GalleryGrid photos={edited} tabId="edited" />
+    </div>
+    <div id="tab-content-nonEdited" class="tab-content hidden">
+      <GalleryGrid photos={nonEdited} tabId="nonEdited" />
+    </div>
+  </div>
+</section>
+
+<script>
+  const tabs = document.querySelectorAll('.tab-btn');
+  tabs.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      tabs.forEach((t) => {
+        t.classList.remove('text-gold', 'border-gold');
+        t.classList.add('text-dark-muted', 'border-transparent');
+      });
+      btn.classList.add('text-gold', 'border-gold');
+      btn.classList.remove('text-dark-muted', 'border-transparent');
+
+      document.querySelectorAll('.tab-content').forEach((c) => c.classList.add('hidden'));
+      document.getElementById(`tab-content-${tab}`).classList.remove('hidden');
+
+      document.querySelectorAll(`#tab-content-${tab} [data-animate]`).forEach((el, i) => {
+        el.classList.remove('is-visible');
+        setTimeout(() => el.classList.add('is-visible'), i * 40);
+      });
+    });
+  });
+</script>

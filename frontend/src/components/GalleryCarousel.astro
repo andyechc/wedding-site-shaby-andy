@@ -1,0 +1,83 @@
+---
+const { photoIds } = Astro.props;
+const carouselPhotos = photoIds.sort(() => Math.random() - 0.5).slice(0, 5);
+---
+
+<section class="py-24 px-6 bg-cream" data-animate="fade-up">
+  <div class="max-w-5xl mx-auto text-center">
+    <h2 class="font-serif text-2xl md:text-3xl text-dark-text font-light tracking-wide mb-3">
+      Our Wedding
+    </h2>
+    <div class="gold-divider w-16 mx-auto mb-12" />
+
+    <div class="relative" id="carousel">
+      <div class="overflow-hidden rounded-sm">
+        <div class="flex transition-transform duration-700 ease-out" id="carousel-track">
+          {carouselPhotos.map((id) => (
+            <div class="min-w-full" data-protected>
+              <div class="photo-frame">
+                <img
+                  src={`/media/${id}`}
+                  alt="Wedding photo"
+                  class="w-full h-[400px] md:h-[500px] object-cover"
+                  draggable="false"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <button id="carousel-prev" class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm text-dark-text hover:bg-gold hover:text-white transition-all duration-300 shadow-md z-10" aria-label="Previous">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button id="carousel-next" class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm text-dark-text hover:bg-gold hover:text-white transition-all duration-300 shadow-md z-10" aria-label="Next">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+
+      <div class="flex justify-center gap-2 mt-6" id="carousel-dots">
+        {carouselPhotos.map((_, i) => (
+          <button class="w-2 h-2 rounded-full transition-all duration-300" class:list={{ 'bg-gold w-6': i === 0, 'bg-gold/30': i !== 0 }} data-dot={i} aria-label={`Go to photo ${i + 1}`} />
+        ))}
+      </div>
+    </div>
+
+    <a
+      href="/gallery"
+      class="inline-block mt-10 font-sans text-xs tracking-[0.25em] uppercase text-gold hover:text-gold-dark transition-colors duration-300 border border-gold/30 hover:border-gold px-8 py-3 rounded-sm"
+    >
+      View All Photos →
+    </a>
+  </div>
+</section>
+
+<script>
+  const track = document.getElementById('carousel-track');
+  if (track) {
+    const slides = track.children;
+    const total = slides.length;
+    let index = 0;
+    let interval;
+
+    function goTo(i) {
+      index = ((i % total) + total) % total;
+      track.style.transform = `translateX(-${index * 100}%)`;
+      document.querySelectorAll('[data-dot]').forEach((dot, j) => {
+        dot.className = `w-2 h-2 rounded-full transition-all duration-300 ${j === index ? 'bg-gold w-6' : 'bg-gold/30'}`;
+      });
+    }
+
+    function next() { goTo(index + 1); }
+    function prev() { goTo(index - 1); }
+
+    document.getElementById('carousel-next')?.addEventListener('click', () => { clearInterval(interval); next(); startAuto(); });
+    document.getElementById('carousel-prev')?.addEventListener('click', () => { clearInterval(interval); prev(); startAuto(); });
+    document.querySelectorAll('[data-dot]').forEach((dot) => {
+      dot.addEventListener('click', () => { clearInterval(interval); goTo(Number(dot.dataset.dot)); startAuto(); });
+    });
+
+    function startAuto() { interval = setInterval(next, 4500); }
+    startAuto();
+  }
+</script>

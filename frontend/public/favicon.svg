@@ -1,0 +1,60 @@
+<svg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9A7B1C" />
+      <stop offset="30%" stop-color="#EAC755" />
+      <stop offset="50%" stop-color="#FFF1A1" />
+      <stop offset="70%" stop-color="#EAC755" />
+      <stop offset="100%" stop-color="#70540A" />
+    </linearGradient>
+
+    <linearGradient id="diamond-base" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E6F2FF" />
+      <stop offset="50%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#B3D1FF" />
+    </linearGradient>
+
+    <radialGradient id="shadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <ellipse cx="150" cy="240" rx="60" ry="10" fill="url(#shadow)" />
+
+  <g id="ring-and-gem">
+    <path d="M 150,90 
+             A 65,65 0 1,0 150,220 
+             A 65,65 0 1,0 150,90 Z
+             M 150,108 
+             A 47,47 0 1,1 150,202 
+             A 47,47 0 1,1 150,108 Z" 
+          fill="url(#gold)" />
+
+    <path d="M 130,90 L 125,70 L 175,70 L 170,90 Z" fill="url(#gold)" stroke="#61460B" stroke-width="0.5" />
+    
+    <polygon points="125,70 175,70 185,50 115,50" fill="url(#diamond-base)" stroke="#A0C0E0" stroke-width="0.5" />
+    <polygon points="115,50 185,50 150,20" fill="#FFFFFF" stroke="#A0C0E0" stroke-width="0.5" />
+
+    <polygon points="115,50 135,50 150,20" fill="#D0E4FF" opacity="0.7"/>
+    <polygon points="135,50 150,50 150,20" fill="#EAF2FF" opacity="0.9"/>
+    <polygon points="150,50 165,50 150,20" fill="#FFFFFF" opacity="0.8"/>
+    <polygon points="165,50 185,50 150,20" fill="#D0E4FF" opacity="0.6"/>
+
+    <polygon points="125,70 135,50 115,50" fill="#FFFFFF" opacity="0.5"/>
+    <polygon points="125,70 145,70 135,50" fill="#BCE0FF" opacity="0.7"/>
+    <polygon points="145,70 150,50 135,50" fill="#EAF2FF" opacity="0.8"/>
+    <polygon points="145,70 155,70 150,50" fill="#FFFFFF" opacity="0.9"/>
+    <polygon points="155,70 165,50 150,50" fill="#BCE0FF" opacity="0.6"/>
+    <polygon points="155,70 175,70 165,50" fill="#EAF2FF" opacity="0.7"/>
+    <polygon points="175,70 185,50 165,50" fill="#FFFFFF" opacity="0.4"/>
+
+    <polygon points="148,45 152,45 150,35" fill="#FFF" />
+    <polygon points="130,65 135,62 140,68" fill="#FFF" opacity="0.8" />
+    <circle cx="158" cy="35" r="2" fill="#FFF" />
+    <circle cx="132" cy="55" r="1.5" fill="#FFF" />
+
+    <circle cx="123" cy="71" r="3" fill="url(#gold)" />
+    <circle cx="177" cy="71" r="3" fill="url(#gold)" />
+  </g>
+</svg>

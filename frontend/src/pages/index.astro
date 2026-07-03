@@ -1,0 +1,27 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Counter from '../components/Counter.astro';
+import GalleryCarousel from '../components/GalleryCarousel.astro';
+import VideoPlayer from '../components/VideoPlayer.astro';
+import Footer from '../components/Footer.astro';
+import media from '../data/media.json';
+const { edited, video } = media;
+---
+
+<Base>
+  {edited.length > 0 && <Hero photoIds={edited} />}
+  {edited.length === 0 && (
+    <section class="h-screen flex items-center justify-center bg-cream pt-20">
+      <div class="text-center">
+        <h1 class="font-script text-6xl md:text-7xl gold-text">Shaby & Andy</h1>
+        <p class="font-body text-dark-muted text-lg mt-4">April 25, 2026</p>
+        <p class="font-sans text-xs tracking-[0.2em] uppercase text-dark-muted/50 mt-16">Run fetch-media.js to load photos</p>
+      </div>
+    </section>
+  )}
+  <Counter />
+  {edited.length > 0 && <GalleryCarousel photoIds={edited} />}
+  <VideoPlayer videoId={video.id} title={video.title} />
+  <Footer slot="footer" />
+</Base>

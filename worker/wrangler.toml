@@ -1,0 +1,9 @@
+name = "boda-media-proxy"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+[vars]
+ALLOWED_ORIGINS = "http://localhost:4321,https://wedding-site-shaby-andy.pages.dev"
+
+[env.production]
+vars = { ALLOWED_ORIGINS = "https://wedding-site-shaby-andy.pages.dev" }
