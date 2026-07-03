@@ -47,6 +47,10 @@ const description = 'April 25, 2026 — Thank you for celebrating with us';
 
     <slot name="footer" />
 
+    <button id="scroll-top" class="fixed bottom-8 right-8 z-40 w-12 h-12 flex items-center justify-center rounded-full bg-gold/90 hover:bg-gold text-white shadow-lg transition-all duration-300 opacity-0 translate-y-4 pointer-events-none" aria-label="Scroll to top">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 15l-6-6-6 6"/></svg>
+    </button>
+
     <script>
       document.addEventListener('DOMContentLoaded', () => {
         const observer = new IntersectionObserver(
@@ -87,6 +91,21 @@ const description = 'April 25, 2026 — Thank you for celebrating with us';
           };
           onScroll();
           window.addEventListener('scroll', onScroll, { passive: true });
+        }
+
+        const scrollBtn = document.getElementById('scroll-top');
+        if (scrollBtn) {
+          const toggleScrollBtn = () => {
+            if (window.scrollY > 500) {
+              scrollBtn.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+              scrollBtn.classList.add('opacity-100', 'translate-y-0');
+            } else {
+              scrollBtn.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+              scrollBtn.classList.remove('opacity-100', 'translate-y-0');
+            }
+          };
+          window.addEventListener('scroll', toggleScrollBtn, { passive: true });
+          scrollBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
         }
       });
 
