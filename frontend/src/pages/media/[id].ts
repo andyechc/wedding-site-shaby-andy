@@ -35,20 +35,17 @@ export const GET: APIRoute = async ({ params, request }) => {
 
     const client = await auth.getClient();
 
-    const metaRes = await client.request({
-      url: `https://www.googleapis.com/drive/v3/files/${id}?fields=mimeType`,
-    });
-    const mimeType = ((metaRes as any).data?.mimeType as string) || 'application/octet-stream';
-
     const url = `https://www.googleapis.com/drive/v3/files/${id}?alt=media`;
     const driveRes = await client.request({ url, responseType: 'stream' });
 
+    const contentType =
+      (driveRes.headers?.['content-type'] as string) || 'application/octet-stream';
     const body = driveRes.data as unknown as ReadableStream;
 
     return new Response(body, {
       status: 200,
       headers: {
-        'Content-Type': mimeType,
+        'Content-Type': contentType,
         'Content-Disposition': 'inline',
         'Cache-Control': 'public, s-maxage=86400, max-age=3600',
         'CDN-Cache-Control': 'public, max-age=86400',
