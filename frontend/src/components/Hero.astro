@@ -4,7 +4,7 @@ const firstImage = photoIds[0];
 const photosJson = JSON.stringify(photoIds);
 ---
 
-<section class="relative h-screen w-full overflow-hidden" data-protected data-photos={photosJson}>
+<section class="relative h-screen w-full overflow-hidden hero-section" data-protected data-photos={photosJson}>
   <div id="hero-a" class="hero-layer absolute inset-0 bg-cover bg-center" style="background-image: url(/media/${firstImage}); opacity: 0; z-index: 10;" />
   <div id="hero-b" class="hero-layer absolute inset-0 bg-cover bg-center" style="opacity: 0; z-index: 9;" />
 
@@ -32,8 +32,9 @@ const photosJson = JSON.stringify(photoIds);
 </section>
 
 <script>
-  const section = document.currentScript?.closest('[data-photos]') || document.querySelector('[data-photos]');
-  const ids = JSON.parse(section?.dataset?.photos || '[]');
+  const section = document.querySelector('.hero-section');
+  if (!section) return;
+  const ids = JSON.parse(section.dataset.photos);
   const a = document.getElementById('hero-a');
   const b = document.getElementById('hero-b');
 
@@ -43,8 +44,12 @@ const photosJson = JSON.stringify(photoIds);
 
     if (ids.length > 0) {
       const img = new Image();
-      img.src = a.style.backgroundImage.replace(/url\(['"]?(.*?)['"]?\)/i, '$1');
-      img.onload = () => { a.style.opacity = '1'; };
+      img.src = a.style.backgroundImage.match(/url\(['"]?(.*?)['"]?\)/i)?.[1] || '';
+      if (img.src) {
+        img.onload = () => { a.style.opacity = '1'; };
+      } else {
+        a.style.opacity = '1';
+      }
     }
 
     if (ids.length > 1) {
