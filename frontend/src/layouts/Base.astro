@@ -1,12 +1,11 @@
 ---
 import '../styles/base.css';
-import media from '../data/media.json';
 const site = 'https://wedding-site-shaby-andy.vercel.app';
 const path = Astro.url.pathname;
 const isHome = path === '/' || path === '';
 const isGallery = path.startsWith('/gallery');
-const ogImage = media.edited.length > 0 ? `${site}/media/${media.edited[0]}` : `${site}/favicon.svg`;
-const pageTitle = isHome ? 'Shaby & Andy' : isGallery ? 'Gallery — Shaby & Andy' : 'Shaby & Andy';
+const ogImage = `${site}/og-image.jpg`;
+const pageTitle = isHome ? 'Shabelly & Jose A.' : isGallery ? 'Gallery — Shabelly & Jose A.' : 'Shabelly & Jose A.';
 const description = 'April 25, 2026 — Thank you for celebrating with us';
 ---
 
