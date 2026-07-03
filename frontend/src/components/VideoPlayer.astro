@@ -4,7 +4,7 @@ const isDev = !process.env.GOOGLE_SERVICE_ACCOUNT || process.env.GOOGLE_SERVICE_
 const placeholderSeed = videoId.slice(0, 8);
 ---
 
-<section class="py-24 px-6 bg-cream-dark" data-animate="fade-up">
+<section class="py-24 px-6 bg-cream" data-animate="fade-up">
   <div class="max-w-4xl mx-auto text-center">
     <h2 class="font-serif text-2xl md:text-3xl text-dark-text font-light tracking-wide mb-3">
       Our Highlight
@@ -79,7 +79,7 @@ const placeholderSeed = videoId.slice(0, 8);
       hideOverlay();
       video.style.display = 'none';
       const msg = document.createElement('div');
-      msg.className = 'absolute inset-0 flex flex-col items-center justify-center bg-cream-dark z-20';
+      msg.className = 'absolute inset-0 flex flex-col items-center justify-center bg-cream z-20';
       msg.innerHTML = '<p class="font-body text-dark-muted text-sm">Video unavailable</p>';
       wrapper.appendChild(msg);
     });
