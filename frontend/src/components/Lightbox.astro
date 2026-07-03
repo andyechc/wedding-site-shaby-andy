@@ -54,10 +54,15 @@ const { id, title } = Astro.props;
     document.body.style.overflow = '';
   };
 
+  function mediaUrl(id) {
+    if (id && id.startsWith('website-images/')) return `/${id}`;
+    return `/media/${id}`;
+  }
+
   function showImage() {
     if (!items.length) return;
     const item = items[currentIndex];
-    img.src = `/media/${item.id}`;
+    img.src = mediaUrl(item.id);
     img.alt = item.title || 'Wedding photo';
     counter.textContent = `${currentIndex + 1} / ${items.length}`;
   }

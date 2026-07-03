@@ -4,6 +4,7 @@ dist/
 .env.local
 service-account.json
 .DS_Store
+frontend/public/website-images/
 .vercel
 .astro
 worker/.wrangler

@@ -12,7 +12,7 @@ const { photos, tabId } = Astro.props;
         data-protected
       >
         <img
-          src={`/media/${photo.id}`}
+          src={`/${photo.id.startsWith('website-images/') ? photo.id : 'media/' + photo.id}`}
           alt={photo.title || 'Wedding photo'}
           class="w-full h-auto object-cover"
           draggable="false"
@@ -31,10 +31,11 @@ const { photos, tabId } = Astro.props;
     const imgs = grid.querySelectorAll('img');
     imgs.forEach((img) => {
       img.addEventListener('click', () => {
-        const items = [...imgs].map((el) => ({
-          id: el.src.split('/media/')[1] || el.src.split('/').pop(),
-          title: el.alt,
-        }));
+        const items = [...imgs].map((el) => {
+          const src = el.src;
+          const id = src.includes('/media/') ? src.split('/media/')[1] : src.split('/').pop();
+          return { id, title: el.alt };
+        });
         const index = Number(img.dataset.index);
         window.openLightbox(index, items);
       });
