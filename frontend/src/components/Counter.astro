@@ -30,23 +30,13 @@ const weddingDate = '2026-04-25T00:00:00';
 </section>
 
 <script>
+  import { intervalToDuration } from 'date-fns';
   const wedding = new Date('2026-04-25T00:00:00');
 
   function computeDiff() {
     const now = new Date();
-    let y = now.getFullYear() - wedding.getFullYear();
-    let m = now.getMonth() - wedding.getMonth();
-    let d = now.getDate() - wedding.getDate();
-    if (d < 0) {
-      m--;
-      const prev = new Date(now.getFullYear(), now.getMonth(), 0);
-      d += prev.getDate();
-    }
-    if (m < 0) {
-      y--;
-      m += 12;
-    }
-    return { years: y, months: m, days: d };
+    const duration = intervalToDuration({ start: wedding, end: now });
+    return { years: duration.years ?? 0, months: duration.months ?? 0, days: duration.days ?? 0 };
   }
 
   function animateValue(el, target) {
