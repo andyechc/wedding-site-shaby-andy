@@ -34,23 +34,33 @@ export const GET: APIRoute = async ({ params, request }) => {
     });
 
     const client = await auth.getClient();
+    const authHeaders = await client.getRequestHeaders();
 
-    const url = `https://www.googleapis.com/drive/v3/files/${id}?alt=media`;
-    const driveRes = await client.request({ url, responseType: 'stream' });
+    const fetchHeaders: Record<string, string> = { ...authHeaders };
 
-    const contentType =
-      (driveRes.headers?.['content-type'] as string) || 'application/octet-stream';
-    const body = driveRes.data as unknown as ReadableStream;
+    const range = request.headers.get('range');
+    if (range) fetchHeaders['Range'] = range;
 
-    return new Response(body, {
-      status: 200,
-      headers: {
-        'Content-Type': contentType,
-        'Content-Disposition': 'inline',
-        'Cache-Control': 'public, s-maxage=86400, max-age=3600',
-        'CDN-Cache-Control': 'public, max-age=86400',
-        ...corsHeaders,
-      },
+    const driveRes = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${id}?alt=media`,
+      { headers: fetchHeaders }
+    );
+
+    const responseHeaders: Record<string, string> = {
+      'Content-Type': driveRes.headers.get('content-type') || 'application/octet-stream',
+      'Content-Disposition': 'inline',
+      'Cache-Control': 'public, max-age=3600',
+      ...corsHeaders,
+    };
+
+    for (const h of ['content-range', 'accept-ranges', 'content-length']) {
+      const val = driveRes.headers.get(h);
+      if (val) responseHeaders[h] = val;
+    }
+
+    return new Response(driveRes.body, {
+      status: driveRes.status,
+      headers: responseHeaders,
     });
   } catch (err: any) {
     return new Response(PLACEHOLDER('error'), {
