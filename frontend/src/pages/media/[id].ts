@@ -38,7 +38,9 @@ export const GET: APIRoute = async ({ params, request }) => {
     const client = await auth.getClient();
 
     if (isStream) {
-      const token = await auth.getAccessToken();
+      const headers = await client.getRequestHeaders();
+      const authHeader = headers['Authorization'] || '';
+      const token = authHeader.replace('Bearer ', '');
       if (token) {
         const driveUrl = `https://www.googleapis.com/drive/v3/files/${id}?alt=media&access_token=${encodeURIComponent(token)}`;
         return new Response(null, {
