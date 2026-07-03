@@ -10,26 +10,18 @@ const weddingDate = '2026-04-25T00:00:00';
       <span class="highlight-marker">Time Since Our Wedding</span>
     </h2>
 
-    <div class="flex justify-center items-start gap-8 md:gap-16">
-      <div class="flex flex-col items-center min-w-[80px]">
-        <span class="counter-value font-serif text-4xl md:text-5xl text-gold font-bold tabular-nums leading-none" data-target="years">0</span>
+    <div class="flex justify-center items-start gap-12 md:gap-20">
+      <div class="flex flex-col items-center min-w-[90px]">
+        <span class="counter-value font-serif text-5xl md:text-6xl text-gold font-bold tabular-nums leading-none" data-target="years">0</span>
         <span class="font-sans text-[10px] tracking-[0.2em] uppercase text-dark-muted mt-3">Years</span>
       </div>
-      <div class="flex flex-col items-center min-w-[80px]">
-        <span class="counter-value font-serif text-4xl md:text-5xl text-gold font-bold tabular-nums leading-none" data-target="months">0</span>
+      <div class="flex flex-col items-center min-w-[90px]">
+        <span class="counter-value font-serif text-5xl md:text-6xl text-gold font-bold tabular-nums leading-none" data-target="months">0</span>
         <span class="font-sans text-[10px] tracking-[0.2em] uppercase text-dark-muted mt-3">Months</span>
       </div>
-      <div class="flex flex-col items-center min-w-[80px]">
-        <span class="counter-value font-serif text-4xl md:text-5xl text-gold font-bold tabular-nums leading-none" data-target="days">0</span>
+      <div class="flex flex-col items-center min-w-[90px]">
+        <span class="counter-value font-serif text-5xl md:text-6xl text-gold font-bold tabular-nums leading-none" data-target="days">0</span>
         <span class="font-sans text-[10px] tracking-[0.2em] uppercase text-dark-muted mt-3">Days</span>
-      </div>
-      <div class="flex flex-col items-center min-w-[80px]">
-        <span class="counter-value font-serif text-4xl md:text-5xl text-gold font-bold tabular-nums leading-none" data-target="hours">0</span>
-        <span class="font-sans text-[10px] tracking-[0.2em] uppercase text-dark-muted mt-3">Hours</span>
-      </div>
-      <div class="flex flex-col items-center min-w-[80px]">
-        <span class="counter-value font-serif text-4xl md:text-5xl text-gold font-bold tabular-nums leading-none" data-target="minutes">0</span>
-        <span class="font-sans text-[10px] tracking-[0.2em] uppercase text-dark-muted mt-3">Minutes</span>
       </div>
     </div>
 
@@ -42,14 +34,19 @@ const weddingDate = '2026-04-25T00:00:00';
 
   function computeDiff() {
     const now = new Date();
-    const diffMs = now - wedding;
-    const totalSeconds = Math.floor(diffMs / 1000);
-    const years = now.getFullYear() - wedding.getFullYear();
-    const months = (now.getFullYear() - wedding.getFullYear()) * 12 + (now.getMonth() - wedding.getMonth());
-    const days = Math.floor(totalSeconds / 86400);
-    const hours = Math.floor((totalSeconds % 86400) / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    return { years, months, days, hours, minutes };
+    let y = now.getFullYear() - wedding.getFullYear();
+    let m = now.getMonth() - wedding.getMonth();
+    let d = now.getDate() - wedding.getDate();
+    if (d < 0) {
+      m--;
+      const prev = new Date(now.getFullYear(), now.getMonth(), 0);
+      d += prev.getDate();
+    }
+    if (m < 0) {
+      y--;
+      m += 12;
+    }
+    return { years: y, months: m, days: d };
   }
 
   function animateValue(el, target) {
