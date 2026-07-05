@@ -21,9 +21,12 @@ function pemToBinary(pem) {
 }
 
 async function getAccessToken(saJson) {
-  const sa = JSON.parse(saJson);
   const now = Math.floor(Date.now() / 1000);
+  if (globalThis.__tokenCache && globalThis.__tokenCache.exp > now + 60) {
+    return globalThis.__tokenCache.token;
+  }
 
+  const sa = JSON.parse(saJson);
   const header = { alg: 'RS256', typ: 'JWT' };
   const payload = {
     iss: sa.client_email,
@@ -55,6 +58,11 @@ async function getAccessToken(saJson) {
     body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`,
   });
   const data = await res.json();
+
+  globalThis.__tokenCache = {
+    token: data.access_token,
+    exp: now + 3500,
+  };
   return data.access_token;
 }
 
