@@ -7,3 +7,5 @@ service-account.json
 .vercel
 .astro
 worker/.wrangler
+worker/package.json
+worker/package-lock.json

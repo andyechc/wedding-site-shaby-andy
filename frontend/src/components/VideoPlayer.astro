@@ -23,10 +23,11 @@ const placeholderSeed = videoId.slice(0, 8);
           <video
             id="wedding-video"
             class="w-full h-full object-contain cursor-pointer"
-            preload="metadata"
+            preload="auto"
             playsinline
             controls
             controlsList="nodownload"
+            crossorigin="anonymous"
             src={`/media/${videoId}`}
           />
           <div

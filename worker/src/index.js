@@ -110,27 +110,39 @@ async function handleRequest(request, env) {
   try {
     const token = await getAccessToken(env.GOOGLE_SERVICE_ACCOUNT);
 
+    const driveHeaders = { Authorization: `Bearer ${token}` };
+    const rangeHeader = request.headers.get('Range');
+    if (rangeHeader) driveHeaders['Range'] = rangeHeader;
+    driveHeaders['Accept-Encoding'] = 'identity';
+
     const driveRes = await fetch(
-      `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&supportsAllDrives=true`,
+      { headers: driveHeaders }
     );
 
-    if (!driveRes.ok) {
+    if (!driveRes.ok && driveRes.status !== 206) {
       const errText = await driveRes.text();
       return new Response(errText, { status: driveRes.status });
     }
 
     const contentType = driveRes.headers.get('Content-Type') || 'application/octet-stream';
+    const contentLength = driveRes.headers.get('Content-Length');
+    const contentRange = driveRes.headers.get('Content-Range');
+
+    const responseHeaders = {
+      'Content-Type': contentType,
+      'Content-Disposition': 'inline',
+      'Accept-Ranges': 'bytes',
+      'Cache-Control': 'private, max-age=3600',
+      'X-Content-Type-Options': 'nosniff',
+      'Access-Control-Allow-Origin': '*',
+    };
+    if (contentLength) responseHeaders['Content-Length'] = contentLength;
+    if (contentRange) responseHeaders['Content-Range'] = contentRange;
 
     return new Response(driveRes.body, {
-      status: 200,
-      headers: {
-        'Content-Type': contentType,
-        'Content-Disposition': 'inline',
-        'Cache-Control': 'private, no-store, max-age=0',
-        'X-Content-Type-Options': 'nosniff',
-        'Access-Control-Allow-Origin': '*',
-      },
+      status: driveRes.status,
+      headers: responseHeaders,
     });
   } catch (err) {
     const svg = PLACEHOLDER_SVG('error');
