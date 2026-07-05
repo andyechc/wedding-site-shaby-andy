@@ -27,8 +27,6 @@ export const GET: APIRoute = async ({ params, request }) => {
     });
   }
 
-  const isStream = new URL(request.url).searchParams.has('stream');
-
   try {
     const auth = new GoogleAuth({
       credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT),
@@ -38,17 +36,12 @@ export const GET: APIRoute = async ({ params, request }) => {
     const client = await auth.getClient();
     const headers = await client.getRequestHeaders();
 
-    if (isStream) {
-      const authHeader = headers['Authorization'] || '';
-      const token = authHeader.replace('Bearer ', '');
-      if (token) {
-        const driveUrl = `https://www.googleapis.com/drive/v3/files/${id}?alt=media&access_token=${encodeURIComponent(token)}`;
-        return new Response(null, {
-          status: 302,
-          headers: { 'Location': driveUrl, ...corsHeaders },
-        });
-      }
-    }
+    const metaRes = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${id}?fields=mimeType`,
+      { headers }
+    );
+    const meta = await metaRes.json();
+    const mimeType = meta.mimeType || 'application/octet-stream';
 
     const fetchHeaders: Record<string, string> = { ...headers };
 
@@ -61,7 +54,7 @@ export const GET: APIRoute = async ({ params, request }) => {
     );
 
     const responseHeaders: Record<string, string> = {
-      'Content-Type': driveRes.headers.get('content-type') || 'application/octet-stream',
+      'Content-Type': mimeType,
       'Content-Disposition': 'inline',
       'Cache-Control': 'private, no-store, max-age=0',
       ...corsHeaders,
@@ -77,7 +70,9 @@ export const GET: APIRoute = async ({ params, request }) => {
       headers: responseHeaders,
     });
   } catch (err: any) {
-    return new Response(PLACEHOLDER('error'), {
+    const svg = PLACEHOLDER('error');
+    return new Response(svg, {
+      status: 200,
       headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public, max-age=60', ...corsHeaders },
     });
   }
