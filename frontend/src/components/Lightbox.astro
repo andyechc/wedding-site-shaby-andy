@@ -54,9 +54,12 @@ const { id, title } = Astro.props;
     document.body.style.overflow = '';
   };
 
+  const WORKER_ORIGIN = import.meta.env.PUBLIC_WORKER_ORIGIN || 'https://boda-media-proxy.andyechc.workers.dev';
+
   function mediaUrl(id) {
+    if (!id) return '';
     if (id && id.startsWith('website-images/')) return `/${id}`;
-    return `/media/${id}`;
+    return `${WORKER_ORIGIN}/media/${id}`;
   }
 
   function showImage() {
