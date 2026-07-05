@@ -27,6 +27,8 @@ export const GET: APIRoute = async ({ params, request }) => {
     });
   }
 
+  const isStream = new URL(request.url).searchParams.has('stream');
+
   try {
     const auth = new GoogleAuth({
       credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT),
@@ -35,6 +37,19 @@ export const GET: APIRoute = async ({ params, request }) => {
 
     const client = await auth.getClient();
     const headers = await client.getRequestHeaders();
+
+    if (isStream) {
+      const authHeader = headers['Authorization'] || '';
+      const token = authHeader.replace('Bearer ', '');
+      if (token) {
+        const driveUrl = `https://www.googleapis.com/drive/v3/files/${id}?alt=media&access_token=${encodeURIComponent(token)}`;
+        return new Response(null, {
+          status: 302,
+          headers: { 'Location': driveUrl, ...corsHeaders },
+        });
+      }
+    }
+
     const fetchHeaders: Record<string, string> = { ...headers };
 
     const range = request.headers.get('range');

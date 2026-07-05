@@ -58,20 +58,22 @@ const initialBento = initialPhotos.map((p, i) => getBentoSpan(p.id, i));
     const gridInner = document.getElementById(`grid-inner-${tabId}`);
     const sentinel = document.getElementById(`sentinel-${tabId}`);
 
-    function attachClick(imgs) {
-      imgs.forEach((img) => {
-        img.addEventListener('click', () => {
-          const allImgs = gridInner.querySelectorAll('img');
-          const items = [...allImgs].map((el) => {
-            return { id: mediaIdFromSrc(el.src), title: el.alt };
+    function attachClick() {
+      gridInner.querySelectorAll('.photo-frame').forEach((frame) => {
+        frame.addEventListener('click', () => {
+          const allFrames = gridInner.querySelectorAll('.photo-frame');
+          const items = [...allFrames].map((el) => {
+            const img = el.querySelector('img');
+            return { id: mediaIdFromSrc(img.src), title: img.alt };
           });
+          const img = frame.querySelector('img');
           const index = Number(img.dataset.index);
           window.openLightbox(index, items);
         });
       });
     }
 
-    attachClick(gridInner.querySelectorAll('img'));
+    attachClick();
 
     if (sentinel && allPhotos.length > loadedCount) {
       const observer = new IntersectionObserver((entries) => {
@@ -96,6 +98,15 @@ const initialBento = initialPhotos.map((p, i) => getBentoSpan(p.id, i));
             img.dataset.galleryId = tabId;
             img.dataset.index = idx;
 
+            div.addEventListener('click', () => {
+              const allFrames = gridInner.querySelectorAll('.photo-frame');
+              const items = [...allFrames].map((el) => {
+                const i = el.querySelector('img');
+                return { id: mediaIdFromSrc(i.src), title: i.alt };
+              });
+              const index = Number(img.dataset.index);
+              window.openLightbox(index, items);
+            });
             div.appendChild(img);
             gridInner.appendChild(div);
             div.classList.add('is-visible');
