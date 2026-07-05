@@ -2,6 +2,7 @@
 const { videoId, title } = Astro.props;
 const isDev = !process.env.GOOGLE_SERVICE_ACCOUNT || process.env.GOOGLE_SERVICE_ACCOUNT === 'dev';
 const placeholderSeed = videoId.slice(0, 8);
+const WORKER = 'https://boda-media-proxy.andyechc.workers.dev';
 ---
 
 <section class="py-16 md:py-24 px-6 bg-[#EDE8E0]" data-animate="fade-up">
@@ -27,7 +28,7 @@ const placeholderSeed = videoId.slice(0, 8);
             playsinline
             controls
             controlsList="nodownload"
-            src={`/media/${videoId}`}
+            src={`${WORKER}/media/${videoId}`}
           />
           <div
             id="video-play-overlay"
