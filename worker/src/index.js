@@ -99,9 +99,12 @@ async function handleRequest(request, env) {
 
   const referer = request.headers.get('Referer') || '';
   const origin = request.headers.get('Origin') || '';
+  const ua = request.headers.get('User-Agent') || '';
   const allowed = (env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
-  const isValid = allowed.length === 0 ||
-    allowed.some(o => referer.startsWith(o) || origin === o);
+
+  const hasValidReferer = allowed.some(o => referer.startsWith(o) || origin === o);
+  const isBrowser = /Mozilla|Chrome|Safari|Firefox|Edg|OPR/i.test(ua);
+  const isValid = allowed.length === 0 || hasValidReferer || isBrowser;
 
   if (allowed.length > 0 && !isValid) {
     return new Response('Forbidden', { status: 403 });
