@@ -164,3 +164,15 @@
 
 [data-animate="scale-in"] { transform: scale(0.95); }
 [data-animate="scale-in"].is-visible { transform: scale(1); }
+
+[data-protected] {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+@media print {
+  [data-protected] {
+    display: none !important;
+  }
+}

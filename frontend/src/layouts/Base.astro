@@ -52,6 +52,8 @@ const description = 'April 25, 2026 — Thank you for celebrating with us';
     </button>
 
     <script>
+      import { ContentProtector } from '@tindalabs/shield';
+
       document.addEventListener('DOMContentLoaded', () => {
         const observer = new IntersectionObserver(
           (entries) => {
@@ -107,13 +109,17 @@ const description = 'April 25, 2026 — Thank you for celebrating with us';
           window.addEventListener('scroll', toggleScrollBtn, { passive: true });
           scrollBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
         }
-      });
 
-      document.addEventListener('contextmenu', (e) => {
-        if (e.target.closest('[data-protected]')) e.preventDefault();
-      });
-      document.addEventListener('dragstart', (e) => {
-        if (e.target.closest('[data-protected]')) e.preventDefault();
+        const protector = new ContentProtector({
+          preventContextMenu: true,
+          preventKeyboardShortcuts: true,
+          preventPrinting: true,
+          preventSelection: true,
+          preventScreenshots: true,
+          preventDevTools: true,
+          preventClipboard: true,
+        });
+        protector.protect();
       });
     </script>
   </body>

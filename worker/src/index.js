@@ -127,7 +127,7 @@ async function handleRequest(request, env) {
       headers: {
         'Content-Type': contentType,
         'Content-Disposition': 'inline',
-        'Cache-Control': 'private, max-age=3600',
+        'Cache-Control': 'private, no-store, max-age=0',
         'X-Content-Type-Options': 'nosniff',
         'Access-Control-Allow-Origin': '*',
       },
