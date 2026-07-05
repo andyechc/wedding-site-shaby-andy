@@ -20,7 +20,7 @@ const { id, title } = Astro.props;
   </button>
 
   <div id="lightbox-content" class="max-w-[95vw] md:max-w-[90vw] max-h-[85vh] flex items-center justify-center">
-    <img id="lightbox-img" class="max-w-full max-h-[85vh] object-contain rounded-sm" src="" alt="" draggable="false" />
+    <img id="lightbox-img" class="max-w-full max-h-[85vh] object-contain rounded-sm" src="" alt="" draggable="false" decoding="async" />
   </div>
 
   <button id="lightbox-next" class="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 rounded-full transition-all z-10" aria-label="Next">

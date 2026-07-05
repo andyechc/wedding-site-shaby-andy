@@ -1,12 +1,21 @@
 ---
+import { getBentoSpan } from '../utils/images';
+
 const { photos, tabId } = Astro.props;
+const initialCount = 24;
+const allPhotosJson = JSON.stringify(photos.map((p, i) => ({
+  ...p,
+  bentoClass: getBentoSpan(p.id, i),
+})));
+const initialPhotos = photos.slice(0, initialCount);
+const initialBento = initialPhotos.map((p, i) => getBentoSpan(p.id, i));
 ---
 
-<div id={`grid-${tabId}`} class="gallery-grid" data-animate="fade-up" data-tab-id={tabId}>
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-    {photos.map((photo, i) => (
+<div id={`grid-${tabId}`} class="gallery-grid" data-animate="fade-up" data-tab-id={tabId} data-photos={allPhotosJson} data-count={initialCount}>
+  <div id={`grid-inner-${tabId}`} class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 auto-rows-[180px] md:auto-rows-[220px]">
+    {initialPhotos.map((photo, i) => (
       <div
-        class="photo-frame cursor-pointer"
+        class={`photo-frame cursor-pointer overflow-hidden ${initialBento[i] || ''}`}
         data-animate="fade-up"
         style={`animation-delay: ${(i % 12) * 80}ms`}
         data-protected
@@ -14,31 +23,98 @@ const { photos, tabId } = Astro.props;
         <img
           src={`/${photo.id.startsWith('website-images/') ? photo.id : 'media/' + photo.id}`}
           alt={photo.title || 'Wedding photo'}
-          class="w-full h-auto object-cover"
+          class="w-full h-full object-cover"
           draggable="false"
           loading="lazy"
+          decoding="async"
+          fetchpriority={i < 6 ? 'high' : 'low'}
           data-gallery-id={tabId}
           data-index={i}
         />
       </div>
     ))}
   </div>
+  <div id={`sentinel-${tabId}`} class="h-4" />
 </div>
 
 <script>
+  function mediaIdFromSrc(src) {
+    const path = new URL(src).pathname;
+    return path.startsWith('/website-images/') ? path.slice(1) : path.replace('/media/', '');
+  }
+
+  function bentoClassFromIndex(idx) {
+    const pattern = idx % 8;
+    if (pattern === 0) return 'col-span-2 row-span-2';
+    if (pattern === 3 || pattern === 7) return 'col-span-2';
+    if (pattern === 4) return 'row-span-2';
+    return '';
+  }
+
   document.querySelectorAll('[data-tab-id]').forEach((grid) => {
     const tabId = grid.dataset.tabId;
-    const imgs = grid.querySelectorAll('img');
-    imgs.forEach((img) => {
-      img.addEventListener('click', () => {
-        const items = [...imgs].map((el) => {
-          const path = new URL(el.src).pathname;
-          const id = path.startsWith('/website-images/') ? path.slice(1) : path.replace('/media/', '');
-          return { id, title: el.alt };
+    const allPhotos = JSON.parse(grid.dataset.photos);
+    let loadedCount = Number(grid.dataset.count);
+    const gridInner = document.getElementById(`grid-inner-${tabId}`);
+    const sentinel = document.getElementById(`sentinel-${tabId}`);
+
+    function attachClick(imgs) {
+      imgs.forEach((img) => {
+        img.addEventListener('click', () => {
+          const allImgs = gridInner.querySelectorAll('img');
+          const items = [...allImgs].map((el) => {
+            return { id: mediaIdFromSrc(el.src), title: el.alt };
+          });
+          const index = Number(img.dataset.index);
+          window.openLightbox(index, items);
         });
-        const index = Number(img.dataset.index);
-        window.openLightbox(index, items);
       });
-    });
+    }
+
+    attachClick(gridInner.querySelectorAll('img'));
+
+    if (sentinel && allPhotos.length > loadedCount) {
+      const observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          const batch = allPhotos.slice(loadedCount, loadedCount + 24);
+          batch.forEach((photo, i) => {
+            const idx = loadedCount + i;
+            const div = document.createElement('div');
+            div.className = `photo-frame cursor-pointer overflow-hidden ${photo.bentoClass || bentoClassFromIndex(idx)}`;
+            div.setAttribute('data-protected', '');
+            div.setAttribute('data-animate', 'fade-up');
+            div.style.animationDelay = `${(idx % 12) * 80}ms`;
+
+            const img = document.createElement('img');
+            img.src = `/${photo.id.startsWith('website-images/') ? photo.id : 'media/' + photo.id}`;
+            img.alt = photo.title || 'Wedding photo';
+            img.className = 'w-full h-full object-cover';
+            img.draggable = false;
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            img.fetchPriority = 'low';
+            img.dataset.galleryId = tabId;
+            img.dataset.index = idx;
+
+            div.appendChild(img);
+            gridInner.appendChild(div);
+            div.classList.add('is-visible');
+            requestAnimationFrame(() => {
+              if (img.naturalWidth && img.naturalHeight) {
+                const ratio = img.naturalWidth / img.naturalHeight;
+                if (ratio > 1.3 && !div.classList.contains('col-span-2')) {
+                  div.classList.add('col-span-2');
+                } else if (ratio < 0.77 && !div.classList.contains('row-span-2')) {
+                  div.classList.add('row-span-2');
+                }
+              }
+            });
+          });
+          loadedCount += batch.length;
+          if (loadedCount >= allPhotos.length) observer.unobserve(sentinel);
+        }
+      }, { rootMargin: '200px' });
+      observer.observe(sentinel);
+    }
   });
 </script>

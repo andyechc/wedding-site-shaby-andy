@@ -5,7 +5,8 @@ const os = require('os');
 
 const OUTPUT_DIR = path.join(__dirname, '..', 'frontend', 'public', 'website-images');
 const MEDIA_PATH = path.join(__dirname, '..', 'frontend', 'src', 'data', 'media.json');
-const WEBP_QUALITY = 55;
+const WEBP_QUALITY = 80;
+const MAX_WIDTH = 1200;
 
 function resolveInput() {
   const idx = process.argv.indexOf('--input');
@@ -50,7 +51,10 @@ async function main() {
       process.stdout.write(`  [${label}] ${i + 1}/${files.length} (${files[i].slice(0, 30)}) `);
       try {
         const buf = fs.readFileSync(src);
-        const webp = await sharp(buf).webp({ quality: WEBP_QUALITY }).toBuffer();
+        const webp = await sharp(buf)
+          .resize({ width: MAX_WIDTH, withoutEnlargement: true })
+          .webp({ quality: WEBP_QUALITY })
+          .toBuffer();
         fs.writeFileSync(dest, webp);
         const saved = ((buf.length - webp.length) / buf.length * 100).toFixed(0);
         process.stdout.write(`\u2713 ${saved}% smaller\n`);
