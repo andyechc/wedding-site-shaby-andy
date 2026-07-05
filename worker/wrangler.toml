@@ -3,7 +3,7 @@ main = "src/index.js"
 compatibility_date = "2025-01-01"
 
 [vars]
-ALLOWED_ORIGINS = "http://localhost:4321,https://wedding-site-shaby-andy.pages.dev"
+ALLOWED_ORIGINS = "http://localhost:4321,https://wedding-site-shaby-andy.pages.dev,https://shaby-and-andy-wedding.vercel.app"
 
 [env.production]
-vars = { ALLOWED_ORIGINS = "https://wedding-site-shaby-andy.pages.dev" }
+vars = { ALLOWED_ORIGINS = "https://wedding-site-shaby-andy.pages.dev,https://shaby-and-andy-wedding.vercel.app" }
