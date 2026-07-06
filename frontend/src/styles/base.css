@@ -95,10 +95,10 @@
   }
 
   .nav-glass {
-    background: rgba(250, 248, 245, 0.75) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
-    border-bottom: 1px solid rgba(201, 168, 76, 0.15) !important;
+    background: rgba(250, 248, 245, 0.55) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid rgba(201, 168, 76, 0.1) !important;
   }
 
   .nav-glass .nav-link {
