@@ -55,6 +55,7 @@ const description = 'April 25, 2026 — Thank you for celebrating with us';
       import { ContentProtector } from '@tindalabs/shield';
 
       document.addEventListener('DOMContentLoaded', () => {
+        const isMobile = window.innerWidth < 768;
         const observer = new IntersectionObserver(
           (entries) => {
             entries.forEach((entry) => {
@@ -65,7 +66,7 @@ const description = 'April 25, 2026 — Thank you for celebrating with us';
               }
             });
           },
-          { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
+          { threshold: 0.01, rootMargin: isMobile ? '0px 0px 100px 0px' : '0px 0px -40px 0px' }
         );
         document.querySelectorAll('[data-animate]').forEach((el) => observer.observe(el));
 
