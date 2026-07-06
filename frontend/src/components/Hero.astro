@@ -8,6 +8,7 @@ const photosJson = JSON.stringify(photoIds);
   <div id="hero-a" class="hero-layer absolute inset-0 bg-cover bg-center" style={`background-image: url(${firstImage.startsWith('website-images/') ? '/' + firstImage : '/media/' + firstImage}); opacity: 0; z-index: 10;`} />
   <div id="hero-b" class="hero-layer absolute inset-0 bg-cover bg-center" style="opacity: 0; z-index: 9;" />
 
+  <div class="absolute inset-0" style="background: linear-gradient(to bottom, rgba(250,248,245,1) 0%, rgba(250,248,245,0) 8%); z-index: 25;" />
   <div class="absolute inset-0" style="background: linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.45) 30%, rgba(0,0,0,0.40) 60%, rgba(0,0,0,0.70) 100%); z-index: 20;" />
 
   <div class="absolute inset-0 z-30 flex flex-col items-center justify-center px-6 pb-12 md:pb-16">
