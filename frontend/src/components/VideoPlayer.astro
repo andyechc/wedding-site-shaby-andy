@@ -2,7 +2,6 @@
 const { videoId, title } = Astro.props;
 const isDev = !process.env.GOOGLE_SERVICE_ACCOUNT || process.env.GOOGLE_SERVICE_ACCOUNT === 'dev';
 const placeholderSeed = videoId.slice(0, 8);
-const WORKER = 'https://boda-media-proxy.andyechc.workers.dev';
 ---
 
 <section class="py-16 md:py-24 px-6 bg-[#EDE8E0]" data-animate="fade-up">
@@ -28,7 +27,8 @@ const WORKER = 'https://boda-media-proxy.andyechc.workers.dev';
             playsinline
             controls
             controlsList="nodownload"
-            src={`${WORKER}/media/${videoId}`}
+            data-video-id={videoId}
+            data-worker-url="https://boda-media-proxy.andyechc.workers.dev"
           />
           <div
             id="video-play-overlay"
@@ -49,3 +49,46 @@ const WORKER = 'https://boda-media-proxy.andyechc.workers.dev';
     )}
   </div>
 </section>
+
+<script>
+  const video = document.getElementById('wedding-video');
+  const overlay = document.getElementById('video-play-overlay');
+  const wrapper = document.getElementById('video-wrapper');
+
+  if (video && overlay && wrapper) {
+    const workerUrl = video.dataset.workerUrl;
+    const videoId = video.dataset.videoId;
+    if (workerUrl && videoId) {
+      video.src = workerUrl + '/media/' + videoId;
+    }
+
+    function showOverlay() {
+      overlay.classList.remove('hidden');
+      overlay.style.display = 'flex';
+    }
+
+    function hideOverlay() {
+      overlay.classList.add('hidden');
+      overlay.style.display = 'none';
+    }
+
+    overlay.addEventListener('click', () => {
+      video.play().catch(() => {});
+    });
+
+    video.addEventListener('play', hideOverlay);
+    video.addEventListener('pause', () => {
+      if (video.currentTime === 0 || video.ended) showOverlay();
+    });
+    video.addEventListener('ended', showOverlay);
+
+    video.addEventListener('error', () => {
+      hideOverlay();
+      video.style.display = 'none';
+      const msg = document.createElement('div');
+      msg.className = 'absolute inset-0 flex flex-col items-center justify-center bg-cream z-20';
+      msg.innerHTML = '<p class="font-body text-dark-muted text-sm">Video unavailable</p>';
+      wrapper.appendChild(msg);
+    });
+  }
+</script>
