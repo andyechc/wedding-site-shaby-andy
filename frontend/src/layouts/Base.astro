@@ -143,6 +143,9 @@ const description = 'April 25, 2026 — Thank you for celebrating with us';
             document.body.appendChild(el);
           }
           el.style.opacity = '1';
+          document.body.style.filter = 'blur(20px)';
+          document.body.style.transition = 'filter 0.15s ease';
+          document.body.style.pointerEvents = 'none';
         }
 
         function scheduleHide(delay) {
@@ -153,6 +156,9 @@ const description = 'April 25, 2026 — Thank you for celebrating with us';
               el.style.opacity = '0';
               setTimeout(() => { el.remove(); }, 500);
             }
+            document.body.style.filter = '';
+            document.body.style.transition = 'filter 0.4s ease';
+            document.body.style.pointerEvents = '';
             hideTimer = null;
           }, delay);
         }
