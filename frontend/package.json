@@ -13,6 +13,7 @@
     "@astrojs/vercel": "^8.0.0",
     "@tindalabs/shield": "^0.1.1",
     "astro": "^5.7.0",
+    "camerashy": "^0.1.0",
     "date-fns": "^4.4.0",
     "google-auth-library": "^9.0.0",
     "image-size": "^2.0.2",
