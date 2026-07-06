@@ -110,11 +110,13 @@ const description = 'April 25, 2026 — Thank you for celebrating with us';
           scrollBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
         }
 
+        const isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || ('ontouchstart' in window);
+
         const protector = new ContentProtector({
-          preventContextMenu: true,
+          preventContextMenu: !isMobile,
           preventKeyboardShortcuts: true,
           preventPrinting: true,
-          preventSelection: true,
+          preventSelection: !isMobile,
           preventScreenshots: true,
           preventDevTools: true,
           preventClipboard: true,
