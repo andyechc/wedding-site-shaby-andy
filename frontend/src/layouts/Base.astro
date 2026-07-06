@@ -55,7 +55,8 @@ const description = 'April 25, 2026 — Thank you for celebrating with us';
       import { ContentProtector } from '@tindalabs/shield';
 
       document.addEventListener('DOMContentLoaded', () => {
-        const isMobile = window.innerWidth < 768;
+        const isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || ('ontouchstart' in window) || window.innerWidth < 768;
+
         const observer = new IntersectionObserver(
           (entries) => {
             entries.forEach((entry) => {
@@ -111,8 +112,6 @@ const description = 'April 25, 2026 — Thank you for celebrating with us';
           window.addEventListener('scroll', toggleScrollBtn, { passive: true });
           scrollBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
         }
-
-        const isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || ('ontouchstart' in window);
 
         const protector = new ContentProtector({
           preventContextMenu: !isMobile,
