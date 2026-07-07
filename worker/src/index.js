@@ -178,6 +178,18 @@ async function handleRequest(request, env) {
     return new Response('Not found', { status: 404 });
   }
 
+  // Diagnostic endpoint
+  if (path === '/__debug') {
+    const sa = env.GOOGLE_SERVICE_ACCOUNT;
+    const exists = !!sa;
+    const isDev = sa === 'dev';
+    const length = sa ? sa.length : 0;
+    const preview = sa ? sa.substring(0, 30) + '...' : 'undefined';
+    return new Response(JSON.stringify({ exists, isDev, length, preview, origins: env.ALLOWED_ORIGINS }), {
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    });
+  }
+
   if (!env.GOOGLE_SERVICE_ACCOUNT || env.GOOGLE_SERVICE_ACCOUNT === 'dev') {
     const seed = path.split('/').pop()?.slice(0, 8) || 'dev';
     return new Response(PLACEHOLDER_SVG(seed), {
