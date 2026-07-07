@@ -1,6 +1,6 @@
 import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
-import vercel from '@astrojs/vercel';
+import cloudflare from '@astrojs/cloudflare';
 
 export default defineConfig({
   integrations: [
@@ -9,6 +9,6 @@ export default defineConfig({
     }),
   ],
   output: 'server',
-  adapter: vercel(),
-  site: 'https://shaby-and-andy-wedding.vercel.app',
+  adapter: cloudflare(),
+  site: 'https://shaby-and-andy-wedding.pages.dev',
 });
