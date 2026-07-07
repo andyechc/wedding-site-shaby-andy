@@ -2,7 +2,7 @@
 const { videoId, title } = Astro.props;
 const isDev = !process.env.GOOGLE_SERVICE_ACCOUNT || process.env.GOOGLE_SERVICE_ACCOUNT === 'dev';
 const placeholderSeed = videoId.slice(0, 8);
-const WORKER_URL = 'https://boda-media-proxy.andyechc.workers.dev';
+const WORKER_URL = 'https://shaby-and-andy-wedding.andychc.workers.dev';
 ---
 
 <section class="py-16 md:py-24 px-6 bg-[#EDE8E0]" data-animate="fade-up">

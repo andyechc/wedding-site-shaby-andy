@@ -1,4 +1,4 @@
-const WORKER_URL = 'https://boda-media-proxy.andyechc.workers.dev';
+const WORKER_URL = 'https://shaby-and-andy-wedding.andychc.workers.dev';
 
 export { WORKER_URL };
 
