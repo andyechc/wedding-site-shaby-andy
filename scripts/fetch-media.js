@@ -4,6 +4,9 @@
  * Fetches file IDs from Google Drive folders using the service account
  * and generates frontend/src/data/media.json
  *
+ * All images are served via the Cloudflare Worker proxy (no Vercel bandwidth).
+ * Video uses HLS streaming via the Worker.
+ *
  * Usage:
  *   export GOOGLE_SERVICE_ACCOUNT='{...}'  # JSON key
  *   node scripts/fetch-media.js
@@ -20,9 +23,8 @@ const frontendModules = path.join(__dirname, '..', 'frontend', 'node_modules');
 const modulePath = require.resolve('google-auth-library', { paths: [frontendModules] });
 const { GoogleAuth } = require(modulePath);
 
-const EDITED_FOLDER_ID = '1Xb1NmvWM-2b-e-OaMMiwUcacToPiVvgc';
-const NON_EDITED_FOLDER_ID = '1JxL3caLTKJ3Ehsf7KYriL8njnnoHR4D3';
-const VIDEO_FILE_ID = '10T4AAJBmqfkTWwdexBiCdcId7fVicxJ9';
+const WEBSITE_IMAGES_FOLDER_ID = '1x5rLvVQnLr2Po8jEygiORIiWNGlfuESe';
+const HLS_STREAM_FOLDER_ID = '1CB1YfKlCnRZrUqrE2UqrjGgw0sBXh6iY';
 
 async function getAccessToken(sa) {
   const auth = new GoogleAuth({
@@ -34,7 +36,7 @@ async function getAccessToken(sa) {
   return token;
 }
 
-async function listFiles(folderId, token) {
+async function listFiles(folderId, token, mimeTypeFilter) {
   const all = [];
   let pageToken = null;
   do {
@@ -54,10 +56,30 @@ async function listFiles(folderId, token) {
     pageToken = data.nextPageToken || null;
   } while (pageToken);
 
-  return all
-    .filter((f) => f.mimeType.startsWith('image/'))
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .map((f) => f.id);
+  let filtered = all;
+  if (mimeTypeFilter) {
+    filtered = all.filter((f) => f.mimeType.startsWith(mimeTypeFilter));
+  }
+
+  return filtered.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+async function listFolderRecursive(folderId, token) {
+  const mapping = {};
+  const rootFiles = await listFiles(folderId, token);
+
+  for (const file of rootFiles) {
+    if (file.mimeType === 'application/vnd.google-apps.folder') {
+      const subFiles = await listFiles(file.id, token);
+      for (const subFile of subFiles) {
+        mapping[`${file.name}/${subFile.name}`] = subFile.id;
+      }
+    } else {
+      mapping[file.name] = file.id;
+    }
+  }
+
+  return mapping;
 }
 
 async function main() {
@@ -76,21 +98,37 @@ async function main() {
   console.log('Authenticating...');
   const token = await getAccessToken(sa);
 
-  console.log('Fetching Edited folder...');
-  const edited = await listFiles(EDITED_FOLDER_ID, token);
-  console.log(`  Found ${edited.length} images`);
+  console.log('Fetching website-images folder...');
+  const allImages = await listFiles(WEBSITE_IMAGES_FOLDER_ID, token, 'image/');
+  console.log(`  Found ${allImages.length} images total`);
 
-  console.log('Fetching Non-edited folder...');
-  const nonEdited = await listFiles(NON_EDITED_FOLDER_ID, token);
-  console.log(`  Found ${nonEdited.length} images`);
+  const edited = [];
+  const nonEdited = [];
+
+  for (const file of allImages) {
+    if (file.name.startsWith('Edited_')) {
+      edited.push(file.id);
+    } else if (file.name.startsWith('Non-edited_')) {
+      nonEdited.push(file.id);
+    }
+  }
+
+  console.log(`  Edited: ${edited.length}`);
+  console.log(`  Non-edited: ${nonEdited.length}`);
+
+  console.log('Fetching hls-stream folder structure...');
+  const hlsMapping = await listFolderRecursive(HLS_STREAM_FOLDER_ID, token);
+  const hlsFiles = Object.keys(hlsMapping);
+  console.log(`  Found ${hlsFiles.length} HLS files`);
 
   const output = {
     edited,
     nonEdited,
     video: {
-      id: VIDEO_FILE_ID,
+      id: HLS_STREAM_FOLDER_ID,
       title: 'Our Wedding Highlight',
     },
+    hls: hlsMapping,
   };
 
   const outPath = path.join(__dirname, '..', 'frontend', 'src', 'data', 'media.json');

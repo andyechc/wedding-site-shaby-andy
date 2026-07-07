@@ -1,11 +1,13 @@
 ---
+import { mediaUrl } from '../utils/media';
 const { photoIds } = Astro.props;
 const firstImage = photoIds[0];
 const photosJson = JSON.stringify(photoIds);
+const firstImageUrl = mediaUrl(firstImage);
 ---
 
 <section class="relative h-screen w-full overflow-hidden hero-section" data-protected data-photos={photosJson}>
-  <div id="hero-a" class="hero-layer absolute inset-0 bg-cover bg-center" style={`background-image: url(${firstImage.startsWith('website-images/') ? '/' + firstImage : '/media/' + firstImage}); opacity: 0; z-index: 10;`} />
+  <div id="hero-a" class="hero-layer absolute inset-0 bg-cover bg-center" style={`background-image: url(${firstImageUrl}); opacity: 0; z-index: 10;`} />
   <div id="hero-b" class="hero-layer absolute inset-0 bg-cover bg-center" style="opacity: 0; z-index: 9;" />
 
   <div class="absolute inset-0" style="background: linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.45) 30%, rgba(0,0,0,0.40) 60%, rgba(0,0,0,0.70) 100%); z-index: 20;" />
@@ -42,7 +44,7 @@ const photosJson = JSON.stringify(photoIds);
     [a, b].forEach(el => el.style.transition = 'opacity 1s ease-in-out');
 
     function mediaUrl(id) {
-      if (id && id.startsWith('website-images/')) return `/${id}`;
+      if (!id) return '';
       return `https://boda-media-proxy.andyechc.workers.dev/media/${id}`;
     }
 

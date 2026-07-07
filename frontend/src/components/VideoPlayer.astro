@@ -2,6 +2,7 @@
 const { videoId, title } = Astro.props;
 const isDev = !process.env.GOOGLE_SERVICE_ACCOUNT || process.env.GOOGLE_SERVICE_ACCOUNT === 'dev';
 const placeholderSeed = videoId.slice(0, 8);
+const WORKER_URL = 'https://boda-media-proxy.andyechc.workers.dev';
 ---
 
 <section class="py-16 md:py-24 px-6 bg-[#EDE8E0]" data-animate="fade-up">
@@ -28,7 +29,7 @@ const placeholderSeed = videoId.slice(0, 8);
             controls
             controlsList="nodownload"
             data-video-id={videoId}
-            data-worker-url="https://boda-media-proxy.andyechc.workers.dev"
+            data-worker-url={WORKER_URL}
           />
           <div
             id="video-play-overlay"
@@ -50,6 +51,7 @@ const placeholderSeed = videoId.slice(0, 8);
   </div>
 </section>
 
+<script is:inline src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
 <script>
   const video = document.getElementById('wedding-video');
   const overlay = document.getElementById('video-play-overlay');
@@ -58,8 +60,30 @@ const placeholderSeed = videoId.slice(0, 8);
   if (video && overlay && wrapper) {
     const workerUrl = video.dataset.workerUrl;
     const videoId = video.dataset.videoId;
+
     if (workerUrl && videoId) {
-      video.src = workerUrl + '/media/' + videoId;
+      const masterUrl = workerUrl + '/hls/' + videoId + '/master.m3u8';
+
+      if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+        const hls = new Hls({
+          startLevel: -1,
+          capLevelToPlayerSize: true,
+        });
+        hls.loadSource(masterUrl);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          video.play().catch(() => {});
+        });
+        hls.on(Hls.Events.ERROR, (event, data) => {
+          if (data.fatal) {
+            console.error('HLS fatal error:', data);
+          }
+        });
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = masterUrl;
+      } else {
+        video.src = workerUrl + '/media/' + videoId;
+      }
     }
 
     function showOverlay() {

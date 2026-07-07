@@ -21,7 +21,7 @@ const initialBento = initialPhotos.map((p, i) => getBentoSpan(p.id, i));
         data-protected
       >
         <img
-          src={`/${photo.id.startsWith('website-images/') ? photo.id : 'media/' + photo.id}`}
+          src={`https://boda-media-proxy.andyechc.workers.dev/media/${photo.id}`}
           alt={photo.title || 'Wedding photo'}
           class="w-full h-full object-cover"
           draggable="false"
@@ -40,7 +40,8 @@ const initialBento = initialPhotos.map((p, i) => getBentoSpan(p.id, i));
 <script>
   function mediaIdFromSrc(src) {
     const path = new URL(src).pathname;
-    return path.startsWith('/website-images/') ? path.slice(1) : path.replace('/media/', '');
+    const parts = path.split('/media/');
+    return parts.length > 1 ? parts[1] : path;
   }
 
   function bentoClassFromIndex(idx) {
@@ -88,7 +89,7 @@ const initialBento = initialPhotos.map((p, i) => getBentoSpan(p.id, i));
             div.style.animationDelay = `${(idx % 12) * 80}ms`;
 
             const img = document.createElement('img');
-            img.src = `/${photo.id.startsWith('website-images/') ? photo.id : 'media/' + photo.id}`;
+            img.src = `https://boda-media-proxy.andyechc.workers.dev/media/${photo.id}`;
             img.alt = photo.title || 'Wedding photo';
             img.className = 'w-full h-full object-cover';
             img.draggable = false;

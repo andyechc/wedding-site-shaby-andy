@@ -56,7 +56,6 @@ const { id, title } = Astro.props;
 
   function mediaUrl(id) {
     if (!id) return '';
-    if (id && id.startsWith('website-images/')) return `/${id}`;
     return `https://boda-media-proxy.andyechc.workers.dev/media/${id}`;
   }
 

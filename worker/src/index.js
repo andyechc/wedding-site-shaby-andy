@@ -66,8 +66,104 @@ async function getAccessToken(saJson) {
   return data.access_token;
 }
 
-function isImage(contentType) {
-  return contentType && (contentType.startsWith('image/') || contentType.startsWith('video/'));
+async function listDriveFolder(folderId, token) {
+  const all = [];
+  let pageToken = null;
+
+  do {
+    const params = new URLSearchParams({
+      q: `'${folderId}' in parents and trashed=false`,
+      fields: 'files(id,name,mimeType),nextPageToken',
+      pageSize: '100',
+    });
+    if (pageToken) params.set('pageToken', pageToken);
+
+    const res = await fetch(
+      `https://www.googleapis.com/drive/v3/files?${params}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const data = await res.json();
+    all.push(...data.files);
+    pageToken = data.nextPageToken || null;
+  } while (pageToken);
+
+  return all;
+}
+
+const hlsCache = new Map();
+
+async function getHlsMapping(folderId, token) {
+  const cached = hlsCache.get(folderId);
+  if (cached && Date.now() - cached.time < 300000) {
+    return cached.mapping;
+  }
+
+  const mapping = {};
+  const rootFiles = await listDriveFolder(folderId, token);
+
+  for (const file of rootFiles) {
+    if (file.mimeType === 'application/vnd.google-apps.folder') {
+      const subFiles = await listDriveFolder(file.id, token);
+      for (const subFile of subFiles) {
+        mapping[`${file.name}/${subFile.name}`] = subFile.id;
+      }
+    } else {
+      mapping[file.name] = file.id;
+    }
+  }
+
+  hlsCache.set(folderId, { mapping, time: Date.now() });
+  return mapping;
+}
+
+async function fetchFromDrive(fileId, request, env) {
+  const token = await getAccessToken(env.GOOGLE_SERVICE_ACCOUNT);
+  const driveHeaders = { Authorization: `Bearer ${token}` };
+
+  const rangeHeader = request.headers.get('Range');
+  if (rangeHeader) driveHeaders['Range'] = rangeHeader;
+  driveHeaders['Accept-Encoding'] = 'identity';
+
+  const driveRes = await fetch(
+    `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&supportsAllDrives=true`,
+    { headers: driveHeaders }
+  );
+
+  if (!driveRes.ok && driveRes.status !== 206) {
+    const errText = await driveRes.text();
+    return new Response(errText, { status: driveRes.status });
+  }
+
+  const contentType = driveRes.headers.get('Content-Type') || 'application/octet-stream';
+  const contentLength = driveRes.headers.get('Content-Length');
+  const contentRange = driveRes.headers.get('Content-Range');
+
+  const responseHeaders = {
+    'Content-Type': contentType,
+    'Content-Disposition': 'inline',
+    'Accept-Ranges': 'bytes',
+    'Cache-Control': 'public, max-age=86400',
+    'X-Content-Type-Options': 'nosniff',
+    'Access-Control-Allow-Origin': '*',
+  };
+  if (contentLength) responseHeaders['Content-Length'] = contentLength;
+  if (contentRange) responseHeaders['Content-Range'] = contentRange;
+
+  return new Response(driveRes.body, {
+    status: driveRes.status,
+    headers: responseHeaders,
+  });
+}
+
+function handleCors() {
+  return new Response(null, {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': '*',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
 }
 
 async function handleRequest(request, env) {
@@ -75,29 +171,16 @@ async function handleRequest(request, env) {
   const path = url.pathname;
 
   if (request.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': '*',
-        'Access-Control-Max-Age': '86400',
-      },
-    });
+    return handleCors();
   }
 
-  if (request.method !== 'GET' || !path.startsWith('/media/')) {
+  if (request.method !== 'GET') {
     return new Response('Not found', { status: 404 });
   }
 
-  const fileId = path.replace('/media/', '');
-  if (!fileId || fileId.length < 10) {
-    return new Response('Invalid file ID', { status: 400 });
-  }
-
-  // Placeholder mode: return gold-toned SVG when no service account configured
   if (!env.GOOGLE_SERVICE_ACCOUNT || env.GOOGLE_SERVICE_ACCOUNT === 'dev') {
-    const svg = PLACEHOLDER_SVG(fileId.slice(0, 8));
-    return new Response(svg, {
+    const seed = path.split('/').pop()?.slice(0, 8) || 'dev';
+    return new Response(PLACEHOLDER_SVG(seed), {
       headers: {
         'Content-Type': 'image/svg+xml',
         'Access-Control-Allow-Origin': '*',
@@ -118,53 +201,52 @@ async function handleRequest(request, env) {
     return new Response('Forbidden', { status: 403 });
   }
 
-  try {
-    const token = await getAccessToken(env.GOOGLE_SERVICE_ACCOUNT);
+  // HLS route: /hls/{folderId}/{filePath...}
+  if (path.startsWith('/hls/')) {
+    const parts = path.replace('/hls/', '').split('/');
+    const folderId = parts[0];
+    const filePath = parts.slice(1).join('/');
 
-    const driveHeaders = { Authorization: `Bearer ${token}` };
-    const rangeHeader = request.headers.get('Range');
-    if (rangeHeader) driveHeaders['Range'] = rangeHeader;
-    driveHeaders['Accept-Encoding'] = 'identity';
-
-    const driveRes = await fetch(
-      `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&supportsAllDrives=true`,
-      { headers: driveHeaders }
-    );
-
-    if (!driveRes.ok && driveRes.status !== 206) {
-      const errText = await driveRes.text();
-      return new Response(errText, { status: driveRes.status });
+    if (!folderId || folderId.length < 10 || !filePath) {
+      return new Response('Invalid HLS path', { status: 400 });
     }
 
-    const contentType = driveRes.headers.get('Content-Type') || 'application/octet-stream';
-    const contentLength = driveRes.headers.get('Content-Length');
-    const contentRange = driveRes.headers.get('Content-Range');
+    try {
+      const token = await getAccessToken(env.GOOGLE_SERVICE_ACCOUNT);
+      const mapping = await getHlsMapping(folderId, token);
+      const fileId = mapping[filePath];
 
-    const responseHeaders = {
-      'Content-Type': contentType,
-      'Content-Disposition': 'inline',
-      'Accept-Ranges': 'bytes',
-      'Cache-Control': 'private, max-age=3600',
-      'X-Content-Type-Options': 'nosniff',
-      'Access-Control-Allow-Origin': '*',
-    };
-    if (contentLength) responseHeaders['Content-Length'] = contentLength;
-    if (contentRange) responseHeaders['Content-Range'] = contentRange;
+      if (!fileId) {
+        return new Response('File not found in HLS folder', { status: 404 });
+      }
 
-    return new Response(driveRes.body, {
-      status: driveRes.status,
-      headers: responseHeaders,
-    });
-  } catch (err) {
-    const svg = PLACEHOLDER_SVG('error');
-    return new Response(svg, {
-      status: 200,
-      headers: {
-        'Content-Type': 'image/svg+xml',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
+      return await fetchFromDrive(fileId, request, env);
+    } catch (err) {
+      return new Response('HLS error', { status: 500 });
+    }
   }
+
+  // Media route: /media/{fileId}
+  if (path.startsWith('/media/')) {
+    const fileId = path.replace('/media/', '');
+    if (!fileId || fileId.length < 10) {
+      return new Response('Invalid file ID', { status: 400 });
+    }
+
+    try {
+      return await fetchFromDrive(fileId, request, env);
+    } catch (err) {
+      return new Response(PLACEHOLDER_SVG('error'), {
+        status: 200,
+        headers: {
+          'Content-Type': 'image/svg+xml',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+    }
+  }
+
+  return new Response('Not found', { status: 404 });
 }
 
 export default { fetch: handleRequest };
