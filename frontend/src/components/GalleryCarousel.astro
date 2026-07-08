@@ -1,6 +1,6 @@
 ---
 const { photoIds } = Astro.props;
-const carouselPhotos = photoIds.sort(() => Math.random() - 0.5).slice(0, 5);
+const carouselPhotos = photoIds.slice(0, 5);
 ---
 
 <section class="py-16 md:py-24 px-6 bg-[#FAF8F5]" data-animate="fade-up">
