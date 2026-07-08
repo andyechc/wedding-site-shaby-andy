@@ -1,5 +1,5 @@
 ---
-import { getBentoSpan } from '../utils/images';
+import { getBentoSpan, bentoClassFromRatio } from '../utils/images';
 
 const { photos, tabId } = Astro.props;
 const initialCount = 24;
@@ -44,12 +44,24 @@ const initialBento = initialPhotos.map((p, i) => getBentoSpan(p.id, i));
     return parts.length > 1 ? parts[1] : path;
   }
 
-  function bentoClassFromIndex(idx) {
-    const pattern = idx % 8;
-    if (pattern === 0) return 'col-span-2 row-span-2';
-    if (pattern === 3 || pattern === 7) return 'col-span-2';
-    if (pattern === 4) return 'row-span-2';
+  function bentoClassFromRatio(w, h) {
+    if (!w || !h) return '';
+    const ratio = w / h;
+    if (ratio > 1.3) return 'col-span-2';
+    if (ratio < 0.77) return 'row-span-2';
     return '';
+  }
+
+  function applyBentoOnLoad(img, frame) {
+    if (img.complete && img.naturalWidth) {
+      const cls = bentoClassFromRatio(img.naturalWidth, img.naturalHeight);
+      if (cls) frame.classList.add(cls);
+    } else {
+      img.addEventListener('load', () => {
+        const cls = bentoClassFromRatio(img.naturalWidth, img.naturalHeight);
+        if (cls) frame.classList.add(cls);
+      });
+    }
   }
 
   document.querySelectorAll('[data-tab-id]').forEach((grid) => {
@@ -59,13 +71,19 @@ const initialBento = initialPhotos.map((p, i) => getBentoSpan(p.id, i));
     const gridInner = document.getElementById(`grid-inner-${tabId}`);
     const sentinel = document.getElementById(`sentinel-${tabId}`);
 
+    // Apply bento to initial photos based on actual ratios
+    gridInner.querySelectorAll('.photo-frame').forEach((frame) => {
+      const img = frame.querySelector('img');
+      if (img) applyBentoOnLoad(img, frame);
+    });
+
     function attachClick() {
       gridInner.querySelectorAll('.photo-frame').forEach((frame) => {
         frame.addEventListener('click', () => {
           const allFrames = gridInner.querySelectorAll('.photo-frame');
           const items = [...allFrames].map((el) => {
-            const img = el.querySelector('img');
-            return { id: mediaIdFromSrc(img.src), title: img.alt };
+            const i = el.querySelector('img');
+            return { id: mediaIdFromSrc(i.src), title: i.alt };
           });
           const img = frame.querySelector('img');
           const index = Number(img.dataset.index);
@@ -83,7 +101,7 @@ const initialBento = initialPhotos.map((p, i) => getBentoSpan(p.id, i));
           batch.forEach((photo, i) => {
             const idx = loadedCount + i;
             const div = document.createElement('div');
-            div.className = `photo-frame cursor-pointer overflow-hidden ${photo.bentoClass || bentoClassFromIndex(idx)}`;
+            div.className = 'photo-frame cursor-pointer overflow-hidden';
             div.setAttribute('data-protected', '');
             div.setAttribute('data-animate', 'fade-up');
             div.style.animationDelay = `${(idx % 12) * 80}ms`;
@@ -111,16 +129,7 @@ const initialBento = initialPhotos.map((p, i) => getBentoSpan(p.id, i));
             div.appendChild(img);
             gridInner.appendChild(div);
             div.classList.add('is-visible');
-            requestAnimationFrame(() => {
-              if (img.naturalWidth && img.naturalHeight) {
-                const ratio = img.naturalWidth / img.naturalHeight;
-                if (ratio > 1.3 && !div.classList.contains('col-span-2')) {
-                  div.classList.add('col-span-2');
-                } else if (ratio < 0.77 && !div.classList.contains('row-span-2')) {
-                  div.classList.add('row-span-2');
-                }
-              }
-            });
+            applyBentoOnLoad(img, div);
           });
           loadedCount += batch.length;
           if (loadedCount >= allPhotos.length) observer.unobserve(sentinel);

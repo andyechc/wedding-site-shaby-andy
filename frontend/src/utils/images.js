@@ -3,13 +3,13 @@ export function getImageDimensions(id) {
 }
 
 export function getBentoSpan(id, index) {
-  return getFallbackSpan(index);
+  return '';
 }
 
-function getFallbackSpan(index) {
-  const pattern = index % 8;
-  if (pattern === 0) return 'col-span-2 row-span-2';
-  if (pattern === 3 || pattern === 7) return 'col-span-2';
-  if (pattern === 4) return 'row-span-2';
+export function bentoClassFromRatio(width, height) {
+  if (!width || !height) return '';
+  const ratio = width / height;
+  if (ratio > 1.3) return 'col-span-2';
+  if (ratio < 0.77) return 'row-span-2';
   return '';
 }
