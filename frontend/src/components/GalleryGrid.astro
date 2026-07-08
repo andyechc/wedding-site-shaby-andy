@@ -21,7 +21,7 @@ const initialBento = initialPhotos.map((p, i) => getBentoSpan(p.id, i));
         data-protected
       >
         <img
-          src={`https://shaby-and-andy-wedding.andychc.workers.dev/media/${photo.id}`}
+          src={`https://shaby-and-andy-wedding.andyechc.workers.dev/media/${photo.id}`}
           alt={photo.title || 'Wedding photo'}
           class="w-full h-full object-cover"
           draggable="false"
@@ -89,7 +89,7 @@ const initialBento = initialPhotos.map((p, i) => getBentoSpan(p.id, i));
             div.style.animationDelay = `${(idx % 12) * 80}ms`;
 
             const img = document.createElement('img');
-            img.src = `https://shaby-and-andy-wedding.andychc.workers.dev/media/${photo.id}`;
+            img.src = `https://shaby-and-andy-wedding.andyechc.workers.dev/media/${photo.id}`;
             img.alt = photo.title || 'Wedding photo';
             img.className = 'w-full h-full object-cover';
             img.draggable = false;

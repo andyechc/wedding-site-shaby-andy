@@ -1,4 +1,4 @@
-const WORKER_URL = 'https://shaby-and-andy-wedding.andychc.workers.dev';
+const WORKER_URL = 'https://shaby-and-andy-wedding.andyechc.workers.dev';
 
 export { WORKER_URL };
 
